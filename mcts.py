@@ -29,8 +29,7 @@ class MonteCarloTreeSearchNode():
 
         actions = get_legal_actions(self.state) 
         np.random.shuffle(actions) #Reshuffle otherwise customers represented by higher integers are expanded more often 
-        self._untried_actions = actions
-        return self._untried_actions
+        return actions
     
     def best_action(self, sim_num):
         #sim_num a hyperparameter 
