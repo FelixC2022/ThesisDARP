@@ -23,7 +23,7 @@ def main(sim_num):
 
 if __name__ == '__main__':
 
-    final_node = main(sim_num=20)
+    final_node = main(sim_num=1)
 
     cost_solution= length_total(final_node.state)
 

@@ -4,7 +4,7 @@ from preprocess import load_data, get_depot_co
 
 
 #READING IN & PREPROCESSING INSTANCE DATA 
-path = 'data/a9-72hetIUY.txt'
+path = 'data/a15-120hetIUY.txt'
 
 num_vehs, num_reqs, route_duration, Q, x_co, y_co, s, L, q, e, l, R = load_data(path)
 
