@@ -10,6 +10,27 @@ num_vehs, num_reqs, route_duration, Q, x_co, y_co, s, L, q, e, l, R = load_data(
 
 depot_co = get_depot_co(num_vehs)
 
+def initialize_state():
+    succ1=[None]*(2*num_reqs)
+    pre1=[None]*(2*num_reqs)
+    RI1=[[None,None] for v in range(num_vehs)]
+    earliest1=e
+    latest1=l
+    
+    cap1=[[0 for i in range(2*num_reqs +2)] for r in range(len(R))]
+    
+    for i in range(len(R)):
+        cap1[i][0]=0
+        cap1[i][2*num_reqs+1]=0
+
+    succ=np.array(succ1)
+    pre=np.array(pre1)
+    RI=np.array(RI1)
+    earliest=np.array(earliest1)
+    latest=np.array(latest1)
+    cap=np.array(cap1)
+    state = [succ1, pre1, RI1, earliest1, latest1, cap1]
+    return state
 
 #HELPER FUNCTIONS 
 def dist(k,i,j):
@@ -107,41 +128,25 @@ def display_routes(state):
     return routes
 
 #Set for the game_result function  
-best_score = np.inf
+best_std_score = np.inf
 best_state = None 
             
 def game_result(state):
-    global best_score, best_state
-    
+    global best_std_score, best_state
+
+    users_served = sum(x is not None for x in state[0])/2
     score = length_total(state)
+    std_score = score/users_served
     
-    if score < best_score:
-        best_score = score
+    if std_score < best_std_score:
+        best_std_score = std_score
         best_state = state 
         return 1
-    if best_score < score < 2*best_score: 
-        return (2-score/best_score) #linear inner function 
+
+    if best_std_score < std_score < 1.25*best_std_score: #2 TOO LARGE ?????? 
+        return (2-std_score/best_std_score) #linear inner function 
+
     else: #tie 
         return 0
 
-def initialize_state():
-    succ1=[None]*(2*num_reqs)
-    pre1=[None]*(2*num_reqs)
-    RI1=[[None,None] for v in range(num_vehs)]
-    earliest1=e
-    latest1=l
-    
-    cap1=[[0 for i in range(2*num_reqs +2)] for r in range(len(R))]
-    
-    for i in range(len(R)):
-        cap1[i][0]=0
-        cap1[i][2*num_reqs+1]=0
 
-    succ=np.array(succ1)
-    pre=np.array(pre1)
-    RI=np.array(RI1)
-    earliest=np.array(earliest1)
-    latest=np.array(latest1)
-    cap=np.array(cap1)
-    state = [pre1, succ1, RI1, earliest1, latest1, cap1]
-    return state

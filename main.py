@@ -8,13 +8,13 @@ from mcts import MonteCarloTreeSearchNode
 
 
 #EXECUTION ALGORITHM 
-def main(sim_num):
+def main(sim_num, truncate):
     state_root = initialize_state()
     node_root = MonteCarloTreeSearchNode(state_root)
 
     current_node = node_root
     for i in tqdm(range(num_reqs)):
-        current_node=current_node.best_action(sim_num)
+        current_node=current_node.best_action(sim_num, truncate)
 
     final_node = current_node
 
@@ -23,15 +23,15 @@ def main(sim_num):
 
 if __name__ == '__main__':
 
-    final_node = main(sim_num=1)
+    final_node = main(sim_num=20, truncate=10)
 
     cost_solution= length_total(final_node.state)
 
-    print([final_node.state[0], final_node.state[1], final_node.state[2]]) #
+    #print([final_node.state[0], final_node.state[1], final_node.state[2]]) #
     print('\n')
     print(cost_solution)
     print('\n')
     print(is_game_over(final_node.state))
     print('\n')
-    print(display_routes(final_node.state))
+    #print(display_routes(final_node.state))
     #print(length_total(selected_node.state)  

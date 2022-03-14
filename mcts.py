@@ -2,7 +2,7 @@ import copy
 import numpy as np
 from tqdm import tqdm
 import pandas as pd
-np.random.seed(123) #same random results (reproducable only for development)
+#np.random.seed(123) #same random results (reproducable only for development)
 
 from utils import get_legal_actions, is_game_over, game_result
 from move import move, move_allroutes
@@ -32,11 +32,11 @@ class MonteCarloTreeSearchNode():
         self._untried_actions = actions
         return self._untried_actions
     
-    def best_action(self, sim_num):
+    def best_action(self, sim_num, truncate):
         #sim_num a hyperparameter 
         for i in range(sim_num):
             v = self._tree_policy() 
-            reward = v.rollout()
+            reward = v.rollout(truncate)
             v.backpropagate(reward)
         return self.best_child(c_param=0.) 
 
@@ -72,40 +72,83 @@ class MonteCarloTreeSearchNode():
         choices_weights = [(c._results)/(c._number_of_visits) + (c_param * np.sqrt((np.log(self._number_of_visits))/c._number_of_visits)) for c in self.children]
         return self.children[np.argmax(choices_weights)]
 
-    def rollout(self):
+    # def rollout(self):
         
+    #     valid_check = True 
+
+    #     current_rollout_state=self.state
+    
+    #     while not is_game_over(current_rollout_state):
+        
+    #         possible_moves = get_legal_actions(current_rollout_state)
+        
+    #         action = self.rollout_policy(possible_moves)
+
+    #         possible_moves.remove(action)
+
+    #         intermediary_state = move(state=current_rollout_state, a=action)
+    
+    #         while intermediary_state == None: 
+    #             if len(possible_moves)==0:
+    #                 valid_check = False
+    #                 break
+    #             action = self.rollout_policy(possible_moves)
+    #             possible_moves.remove(action)
+    #             intermediary_state = move(current_rollout_state, action)
+
+    #         current_rollout_state = intermediary_state
+
+    #         if valid_check == False: 
+    #             break #removed actions in the code above will not be included in a final solution of the rollout
+
+    #     #if rollout is totally blocked and no possible insertion is found 
+    #     if current_rollout_state == None:
+    #         return 0     
+    
+    #     return game_result(current_rollout_state)
+
+
+    def rollout(self, truncate=15): 
+
         valid_check = True 
-
+        
         current_rollout_state=self.state
-    
-        while not is_game_over(current_rollout_state):
-        
-            possible_moves = get_legal_actions(current_rollout_state)
-        
-            action = self.rollout_policy(possible_moves)
 
-            possible_moves.remove(action)
+        for i in range(truncate):
 
-            intermediary_state = move(state=current_rollout_state, a=action)
-    
-            while intermediary_state == None: 
-                if len(possible_moves)==0:
-                    valid_check = False
-                    break
+            if is_game_over(current_rollout_state):
+                break
+            
+            else: 
+
+                possible_moves = get_legal_actions(current_rollout_state)
+            
                 action = self.rollout_policy(possible_moves)
+
                 possible_moves.remove(action)
-                intermediary_state = move(current_rollout_state, action)
 
-            current_rollout_state = intermediary_state
+                intermediary_state = move(state=current_rollout_state, a=action)
 
-            if valid_check == False: 
-                break #removed actions in the code above will not be included in a final solution of the rollout
+                while intermediary_state == None: #can be None if user cannot be feasably inserted in any route 
+                    if len(possible_moves)==0:
+                        valid_check = False
+                        break
+                    action = self.rollout_policy(possible_moves)
+                    possible_moves.remove(action)
+                    intermediary_state = move(current_rollout_state, action)
+
+                if valid_check == False: 
+                    break #removed actions in the code above will not be included in a final solution of the rollout
+
+                current_rollout_state = intermediary_state
 
         #if rollout is totally blocked and no possible insertion is found 
         if current_rollout_state == None:
             return 0     
     
         return game_result(current_rollout_state)
+
+    
     
     def rollout_policy(self, possible_moves):
     
