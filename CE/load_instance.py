@@ -1,6 +1,7 @@
 import pandas as pd 
 import numpy as np
 
+path = 'CE/data/a2-16.txt'
 
 def load_instance(path):
     settings = pd.read_csv(path, sep=" ", header=None, nrows=1)
@@ -31,4 +32,4 @@ def load_instance(path):
     return K, n, T, Q, L, x_co, y_co, s, cap, e, l 
 
 
-
+K, n, T, Q, L, x_co, y_co, s, cap, e, l  = load_instance(path)
