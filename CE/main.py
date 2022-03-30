@@ -21,6 +21,8 @@ for i in range(len(insertions_pos)):
     new_route = gen_newroute(route, new_user, insertions_pos[i])
     check, B = eight_step(route)
     print(B)
+    check, B = eight_step(new_route)
+    print(B)
     length = B[-1] - B[1]
     results.append([new_route, check, length])
 
