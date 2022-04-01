@@ -100,8 +100,11 @@ def calc_Fi(i, route, W, B, RT):
     slacks = np.full(len(route)-i, np.inf)
     idx = 0 
     for j in range(i, len(route)): 
-        term1 = sum(W[:j+1])
-        term2 = max(0, min(l[route[j]]-B[j], L - RT[j]))
+        term1 = sum(W[i:j+1])
+        if route[j] <= n: 
+            term2 = max(0, l[route[j]]-B[j]) #or RT[j] equal to zero 
+        else: 
+            term2 = max(0, min(l[route[j]]-B[j], L - RT[j])) #or RT[j] equal to zero if j-n not visited before i 
         slack = term1 + term2
         slacks[idx] = slack
         idx += 1
@@ -158,3 +161,26 @@ def eight_step(route):
 
     else: 
         return False, B
+
+
+# #Some testing 
+# route = np.array([0, 3, 19, 33], dtype=int)
+# A, B, W, D, Load, RT = calculate_ads(route, start = e[route[0]])
+
+
+# Fi = calc_Fi(0, route, W, B, RT)
+
+# Wp = sum(W[:len(route)])
+
+# A, B, W, D, Load, RT = calculate_ads(route, start = Wp)
+
+# print(A)
+# print(B)
+# print(W)
+# print(D)
+# print(RT)
+
+# check, B = eight_step(route)
+
+# print(check, B[-1]-B[0])
+# # print(dist[0,3], dist[3,19], dist[19,33])

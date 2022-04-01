@@ -20,21 +20,7 @@ while len(unserved) != 0:
         # Look for the best possible insertion and choose this one
         results = np.empty((len(insertions_pos), 3))
 
-<<<<<<< HEAD
         shortest = np.inf
-=======
-#Look for the best possible insertion and choose this one 
-print(insertions_pos)
-for i in range(len(insertions_pos)):
-    results = []
-    new_route = gen_newroute(route, new_user, insertions_pos[i])
-    check, B = eight_step(route)
-    print(B)
-    check, B = eight_step(new_route)
-    print(B)
-    length = B[-1] - B[1]
-    results.append([new_route, check, length])
->>>>>>> da59cb5a0508ab1bd908918cb4fe2c4ad2906dc4
 
         for i in range(len(insertions_pos)):
             new_route = gen_newroute(route, new_user, insertions_pos[i])
@@ -57,5 +43,12 @@ for i in solution:
 
 print(cost)
 
+# route = np.array([0,33], dtype=int)
+# unserved = np.array([3], dtype=int)
+# insertions_pos = get_insertions(route)
+
+# test = get_feasible_users(route, insertions_pos, unserved)
+
+# print(test)
 
 print("--- %s seconds ---" % (time.time() - start_time))
