@@ -3,25 +3,45 @@ from feasability import *
 
 import numpy as np 
 
-users = np.arange(1,n+1)
+import time
+start_time = time.time()
 
-route = np.array([0, 5, 5+n, 2*n+1], dtype=int)
+solution = []
+unserved = get_unserved_solution(solution)
 
-insertions_pos = get_insertions(route)
-feasible_users = get_feasible_users(route, insertions_pos)
+while len(unserved) != 0:
+    route = np.array([ 0, 33], dtype=int) #np.array([0, 5, 5+n, 2*n+1], dtype=int)
+    insertions_pos = get_insertions(route)
+    feasible_users = get_feasible_users(route, insertions_pos, unserved)
 
-print(feasible_users) #[ 3  4  9 11 13 14 15 16]
+    while len(feasible_users) != 0: 
 
-new_user = 11 #select from feasible users according to Pij, need to implement this 
+        new_user = np.random.choice(feasible_users) #select from feasible users according to Pij, need to implement this 
+        # Look for the best possible insertion and choose this one
+        results = np.empty((len(insertions_pos), 3))
 
-#Look for the best possible insertion and choose this one 
-print(insertions_pos)
-for i in range(len(insertions_pos)):
-    results = []
-    new_route = gen_newroute(route, new_user, insertions_pos[i])
-    check, B = eight_step(route)
-    print(B)
-    length = B[-1] - B[1]
-    results.append([new_route, check, length])
+        shortest = np.inf
 
-#Somthing goes wrong here. If you change new_user the B' arrays seem to stay the same which is weird... maybe this has something to do with pointers in memory... 
+        for i in range(len(insertions_pos)):
+            new_route = gen_newroute(route, new_user, insertions_pos[i])
+            check, B = eight_step(new_route)
+            length = B[-1] - B[1]
+            if check and length < shortest: 
+                shortest = length
+                route = new_route
+
+        insertions_pos = get_insertions(route)
+        unserved = np.delete(unserved, np.where(unserved == new_user))
+        feasible_users = get_feasible_users(route, insertions_pos, unserved)
+
+    solution.append([route, shortest])
+
+cost = 0
+for i in solution: 
+    cost += i[1]
+    print(i[0])
+
+print(cost)
+
+
+print("--- %s seconds ---" % (time.time() - start_time))

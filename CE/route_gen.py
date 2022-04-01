@@ -3,12 +3,19 @@ from load_instance import *
 
 import numpy as np
 
-def get_unserved(route):
+def get_unserved_solution(solution):
     unserved = np.arange(1,n+1, dtype=int)
-    for vertex in route: 
-        if vertex <= n: 
-            unserved = np.delete(unserved, np.where(unserved == vertex))
+    for route in solution:
+        for vertex in route[0]: 
+            if vertex <= n: 
+                unserved = np.delete(unserved, np.where(unserved == vertex))
     return unserved
+
+def get_unserved_route(route):
+    unserved = np.arange(1, n+1, dtype=int)
+    for vertex in route: 
+        if vertex <= n:
+            unserved = np.delete(unserved, np.where(unserved==vertex))
 
 #Return the possible insertion combinations of a new user in a route; only considering everything after the last pickup vertex
 def get_insertions(route):  
@@ -27,11 +34,9 @@ def gen_newroute(route, user, indices): #indices = array with index for pickup a
     new_route = np.insert(new_route, indices[1]+1, user+n)
     return new_route
 
-def get_feasible_users(route, insertions_pos):
+def get_feasible_users(route, insertions_pos, unserved):
     feasible_users = np.array([], int)
-    unserverd = get_unserved(route)
-
-    for user in unserverd: 
+    for user in unserved: 
         for indices in insertions_pos:  
             new_tour = gen_newroute(route, user, indices)
             feasible, B = eight_step(new_tour)
