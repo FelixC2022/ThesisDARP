@@ -2,6 +2,8 @@ from feasability import *
 from load_instance import *
 
 import numpy as np
+from tqdm import tqdm
+
 
 def get_unserved_solution(solution):
     unserved = np.arange(1,n+1, dtype=int)
@@ -79,3 +81,10 @@ def gen_solution():
     solution = np.array(solution, dtype=object)
     
     return solution
+
+def gen_N_solutions(N):
+    solutions_all = []
+    for i in tqdm(range(N)):
+        solution = gen_solution() 
+        solutions_all.append(solution)
+    return solutions_all

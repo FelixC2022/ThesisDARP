@@ -4,25 +4,26 @@ from feasability import *
 import numpy as np 
 
 import time
-from tqdm import tqdm
 
 start_time = time.time()
 
 #Generate N solutions 
-N = 10
-def gen_N_solutions(N):
-    solutions_all = []
-    for i in tqdm(range(N)):
-        solution = gen_solution() 
-        solutions_all.append(solution)
-    return solutions_all
-
+N = 40
 solutions_all = gen_N_solutions(N)
+
+minimal = np.inf
+for solution in solutions_all:
+    cost = length_solution(solution)
+    if cost < minimal:
+        minimal = cost
+        best = solution
+
+print(best)
+print(minimal)
 
 #Perform Local Search on the x best solution 
 
 #Update the Pij matrix 
-
 
 
 print("--- %s seconds ---" % (time.time() - start_time))
