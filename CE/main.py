@@ -24,8 +24,8 @@ while len(unserved) != 0:
 
         for i in range(len(insertions_pos)):
             new_route = gen_newroute(route, new_user, insertions_pos[i])
-            check, B = eight_step(new_route)
-            length = B[-1] - B[1]
+            check = eight_step(new_route)
+            length = length_route(new_route)
             if check and length < shortest: 
                 shortest = length
                 route = new_route

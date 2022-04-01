@@ -12,20 +12,17 @@ for i in range(2*n+2):
     for j in range(2*n+2): 
         dist[i,j] = distance(i, j)
 
-# def length_tour(tour): 
-#     """
-#     THIS IS NOT CORRECT AS DOES NOT TAKE INTO ACCOUNT WAITING TIMES
+def length_route(route):
+    total = 0 
+    for i in range(len(route)-1):
+        total += dist[route[i], route[i+1]]
+    return total 
 
-#     THE CORRECT FORMULA IS B2n+1 - B0 where Bi is the beginning of service at vertex i 
-    
-#     """
-#     dist_total = sum([dist[i,i+1] for i in range(len(tour)-1)])   #sum([dist(tour[i], tour[i+1]) 
-#     return dist_total  
-
-# def f_function(tour, alpha, beta, gamma, tau):
-#     f = length_tour(tour) + alpha*load_vio+ beta*duration_vio + gamma*timewindow_vio + tua*ridtime_vio
-#     return f 
-    
+def length_solution(solution):
+    total = 0 
+    for route in solution: 
+        total += length_route(route)
+    return total 
 
 def calculate_ads(route, start):
     D = np.zeros(len(route)) #Departure time at vertex i 
@@ -118,10 +115,10 @@ def eight_step(route):
     A, B, W, D, Load, RT = calculate_ads(route, start = e[route[0]])
 
     if not check_tw(route, B):
-        return False, B
+        return False
 
     if not check_cap(route, Load):
-        return False, B 
+        return False
 
     F0 = calc_Fi(0, route, W, B, RT)
     Wp = sum(W[:len(route)])
@@ -130,7 +127,7 @@ def eight_step(route):
 
     if check_ridetime(route, RT): 
         if check_routeduration(route, B):
-            return True, B #here all ride times ar feasible and we just need to check route duration 
+            return True #here all ride times ar feasible and we just need to check route duration 
         #No in this case we acutally still need to check route duration 
 
     #Some more adaptations for possibly solving ridetime violations 
@@ -156,31 +153,7 @@ def eight_step(route):
                 #check whether the drive time is respected for all dropoff vertices after i, if so the route is feasible 
                 if check_ridetime(route, RT):
                     if check_routeduration(route, B):
-                        return True, B #also here we need to check route duration 
+                        return True #also here we need to check route duration 
                          
-
     else: 
-        return False, B
-
-
-# #Some testing 
-# route = np.array([0, 3, 19, 33], dtype=int)
-# A, B, W, D, Load, RT = calculate_ads(route, start = e[route[0]])
-
-
-# Fi = calc_Fi(0, route, W, B, RT)
-
-# Wp = sum(W[:len(route)])
-
-# A, B, W, D, Load, RT = calculate_ads(route, start = Wp)
-
-# print(A)
-# print(B)
-# print(W)
-# print(D)
-# print(RT)
-
-# check, B = eight_step(route)
-
-# print(check, B[-1]-B[0])
-# # print(dist[0,3], dist[3,19], dist[19,33])
+        return False

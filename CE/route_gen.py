@@ -39,44 +39,8 @@ def get_feasible_users(route, insertions_pos, unserved):
     for user in unserved: 
         for indices in insertions_pos:  
             new_tour = gen_newroute(route, user, indices)
-            feasible, B = eight_step(new_tour)
+            feasible = eight_step(new_tour)
             if feasible:
                 feasible_users = np.append(feasible_users, user)
                 break 
     return feasible_users
-
-# def check_feasibles(ls): #ls is a list with the routes 
-#     feasible = np.zeros(len(ls))
-#     for i in range(len(ls)):
-#         feasible[i] =  eight_step(ls[i])
-#         return feasible
-
-#Testing 
-
-# In total there are 16 users which need to be served 
-# route_intial = [0, 1, 2, 1+n, 2+n, 2*n+1]
-
-# We define a move as inserting a customer (both pickup & dropoff) after the last pickup vertex in the route 
-
-# Let's say we want to add customer 3 (with vertices 3 and 3+n) to the route we have the following options
-
-# We need a function to generate all these and check them (maybe we can parallelize this) as soon as one feasible insertion is found move on to the nex customer 
-
-# 1 new_route = [0, 1, 2, 3, 3+n, 1+n, 2+n, 2*n+1]
-
-# 2 new_route = [0, 1, 2, 3, 1+n, 3+n, 2+n, 2*n+1]
-
-# 3 new_route = [0, 1, 2, 3, 1+n, 2+n, 3+n, 2*n+1]
-
-# 3 new_route = [0, 1, 2, 1+n, 3, 3+n, 2+n, 2*n+1]
-
-# 4 new_route = [0, 1, 2, 1+n, 3, 2+n, 3+n, 2*n+1]
-
-# 5 new_route = [0, 1, 2, 1+n, 2+n, 3, 3+n, 2*n+1]
-
-# new_route = [[0, 1, 2, 3, 3+n, 1+n, 2+n, 2*n+1],
-# [0, 1, 2, 3, 1+n, 3+n, 2+n, 2*n+1],
-# [0, 1, 2, 3, 1+n, 2+n, 3+n, 2*n+1],
-# [0, 1, 2, 1+n, 3, 3+n, 2+n, 2*n+1],
-# [0, 1, 2, 1+n, 3, 2+n, 3+n, 2*n+1],
-# [0, 1, 2, 1+n, 2+n, 3, 3+n, 2*n+1]]
