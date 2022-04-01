@@ -44,3 +44,38 @@ def get_feasible_users(route, insertions_pos, unserved):
                 feasible_users = np.append(feasible_users, user)
                 break 
     return feasible_users
+
+def gen_solution():
+    solution = []
+    unserved = get_unserved_solution(solution)
+
+    while len(unserved) != 0:
+        route = np.array([ 0, 2*n+1], dtype=int) #np.array([0, 5, 5+n, 2*n+1], dtype=int)
+        insertions_pos = get_insertions(route)
+        feasible_users = get_feasible_users(route, insertions_pos, unserved)
+
+        while len(feasible_users) != 0: 
+
+            new_user = np.random.choice(feasible_users) #select from feasible users according to Pij, need to implement this 
+
+            # Look for the best possible insertion and choose this one
+            shortest = np.inf
+
+            for i in range(len(insertions_pos)):
+                new_route = gen_newroute(route, new_user, insertions_pos[i])
+                check = eight_step(new_route)
+                length = length_route(new_route)
+                if check and length < shortest: 
+                    shortest = length
+                    route = new_route
+
+            insertions_pos = get_insertions(route)
+            unserved = np.delete(unserved, np.where(unserved == new_user))
+            feasible_users = get_feasible_users(route, insertions_pos, unserved)
+
+        # solution = np.append(solution, route)
+        solution.append(route)
+
+    solution = np.array(solution, dtype=object)
+    
+    return solution

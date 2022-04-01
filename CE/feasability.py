@@ -1,7 +1,6 @@
 from load_instance import K, n, T, Q, L, x_co, y_co, s, cap, e, l
 
 import numpy as np 
-#from numba import njit
 
 #Helper function 
 def distance(i,j): 

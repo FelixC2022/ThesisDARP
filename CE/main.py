@@ -4,51 +4,25 @@ from feasability import *
 import numpy as np 
 
 import time
+from tqdm import tqdm
+
 start_time = time.time()
 
-solution = []
-unserved = get_unserved_solution(solution)
+#Generate N solutions 
+N = 10
+def gen_N_solutions(N):
+    solutions_all = []
+    for i in tqdm(range(N)):
+        solution = gen_solution() 
+        solutions_all.append(solution)
+    return solutions_all
 
-while len(unserved) != 0:
-    route = np.array([ 0, 33], dtype=int) #np.array([0, 5, 5+n, 2*n+1], dtype=int)
-    insertions_pos = get_insertions(route)
-    feasible_users = get_feasible_users(route, insertions_pos, unserved)
+solutions_all = gen_N_solutions(N)
 
-    while len(feasible_users) != 0: 
+#Perform Local Search on the x best solution 
 
-        new_user = np.random.choice(feasible_users) #select from feasible users according to Pij, need to implement this 
-        # Look for the best possible insertion and choose this one
-        results = np.empty((len(insertions_pos), 3))
+#Update the Pij matrix 
 
-        shortest = np.inf
 
-        for i in range(len(insertions_pos)):
-            new_route = gen_newroute(route, new_user, insertions_pos[i])
-            check = eight_step(new_route)
-            length = length_route(new_route)
-            if check and length < shortest: 
-                shortest = length
-                route = new_route
-
-        insertions_pos = get_insertions(route)
-        unserved = np.delete(unserved, np.where(unserved == new_user))
-        feasible_users = get_feasible_users(route, insertions_pos, unserved)
-
-    solution.append([route, shortest])
-
-cost = 0
-for i in solution: 
-    cost += i[1]
-    print(i[0])
-
-print(cost)
-
-# route = np.array([0,33], dtype=int)
-# unserved = np.array([3], dtype=int)
-# insertions_pos = get_insertions(route)
-
-# test = get_feasible_users(route, insertions_pos, unserved)
-
-# print(test)
 
 print("--- %s seconds ---" % (time.time() - start_time))
