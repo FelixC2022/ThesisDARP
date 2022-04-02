@@ -3,7 +3,8 @@ from load_instance import *
 
 import numpy as np
 from tqdm import tqdm
-
+import random
+# import asyncio
 
 def get_unserved_solution(solution):
     unserved = np.arange(1,n+1, dtype=int)
@@ -47,7 +48,7 @@ def get_feasible_users(route, insertions_pos, unserved):
                 break 
     return feasible_users
 
-def gen_solution():
+def gen_solution(P):
     solution = []
     unserved = get_unserved_solution(solution)
 
@@ -57,12 +58,19 @@ def gen_solution():
         feasible_users = get_feasible_users(route, insertions_pos, unserved)
 
         while len(feasible_users) != 0: 
+            epsilon = random.random()
 
-            new_user = np.random.choice(feasible_users) #select from feasible users according to Pij, need to implement this 
+            if epsilon <= 0.1:
+                new_user = np.random.choice(feasible_users)
+
+            else: 
+                last_pickup = int(max((np.argwhere(route <= n))))
+                prob = P[last_pickup, feasible_users]
+                prob_norm = [i/sum(prob) for i in prob]
+                new_user = random.choices(feasible_users, weights = prob_norm) 
 
             # Look for the best possible insertion and choose this one
             shortest = np.inf
-
             for i in range(len(insertions_pos)):
                 new_route = gen_newroute(route, new_user, insertions_pos[i])
                 check = eight_step(new_route)
@@ -82,9 +90,17 @@ def gen_solution():
     
     return solution
 
-def gen_N_solutions(N):
+def gen_N_solutions(N, P):
+    # tasks = []
+    # for i in range(N):
+    #     task = asyncio.create_task(gen_solution())
+    #     tasks.append(task)
+
+    # solutions_all = await asyncio.gather(*tasks)
+
     solutions_all = []
-    for i in tqdm(range(N)):
-        solution = gen_solution() 
+    for i in range(N):
+        solution = gen_solution(P) 
         solutions_all.append(solution)
+
     return solutions_all
