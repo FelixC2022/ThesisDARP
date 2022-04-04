@@ -2,9 +2,9 @@ from feasability import *
 from load_instance import *
 
 import numpy as np
-from tqdm import tqdm
 import random
-# import asyncio
+import concurrent.futures
+
 
 def get_unserved_solution(solution):
     unserved = np.arange(1,n+1, dtype=int)
@@ -91,16 +91,13 @@ def gen_solution(P):
     return solution
 
 def gen_N_solutions(N, P):
-    # tasks = []
-    # for i in range(N):
-    #     task = asyncio.create_task(gen_solution())
-    #     tasks.append(task)
-
-    # solutions_all = await asyncio.gather(*tasks)
-
-    solutions_all = []
-    for i in range(N):
-        solution = gen_solution(P) 
-        solutions_all.append(solution)
-
+    solutions_all = [gen_solution(P) for _ in range(N)]
     return solutions_all
+
+def gen_N_solutions_multiprocess(N,P):
+    P_list = [P for _ in range(N)]
+    with concurrent.futures.ProcessPoolExecutor() as executor: 
+        results = executor.map(gen_solution, P_list)
+    return results
+
+

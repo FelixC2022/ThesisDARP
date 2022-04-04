@@ -2,8 +2,7 @@ from route_gen import *
 from feasability import *
 
 import numpy as np 
-import time
-from tqdm import tqdm
+import concurrent.futures
 
 
 # print(len(sol), length_solution(sol))
@@ -70,4 +69,14 @@ def repair_sol(sol):
     
     return routes_selected
 
+
+def repair_N_solutions(solutions_all):
+    solutions_repaired = [repair_sol(sol) for sol in solutions_all]
+    return solutions_repaired
+
+def repair_N_solutions_multiprocess(solutions_all):
+    with concurrent.futures.ProcessPoolExecutor() as executor: 
+        results = executor.map(repair_sol, solutions_all)
+
+    return results
 

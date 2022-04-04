@@ -99,7 +99,7 @@ def calc_Fi(i, route, W, B, RT):
     for j in range(i, len(route)): 
         term1 = sum(W[i:j+1])
         if route[j] <= n: 
-            term2 = max(0, l[route[j]]-B[j]) #or RT[j] equal to zero 
+            term2 = max(0, l[route[j]]-B[j]) 
         else: 
             term2 = max(0, min(l[route[j]]-B[j], L - RT[j])) #or RT[j] equal to zero if j-n not visited before i 
         slack = term1 + term2

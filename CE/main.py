@@ -6,63 +6,80 @@ import numpy as np
 import time
 from tqdm import tqdm
 
-start_time = time.time()
+if __name__ == '__main__':
 
-#Initialization
-best = np.inf
-N = 10 #num of solutions to generate
-K = 3 #num of elite solutions to select 
+    start_time = time.time()
 
-P = np.full((n+2, n+2), 1/((n+2)*(n+2))) #uniform initialization of P 
+    #Initialization
+    best_score = np.inf
+    N = 25 #num of solutions to generate
+    num_elite = 5 #num of elite solutions to select 
 
-for i in tqdm(range(15)):
-    # Generate N solutions & select the K best solutions 
-    
-    solutions_all = gen_N_solutions(N, P)
+    P = np.full((n+2, n+2), 1/((n+2)*(n+2))) #uniform initialization of P 
 
-    solutions_all = [repair_sol(sol) for sol in solutions_all]
+    for i in tqdm(range(10)):
+        # Generate N solutions & select the K best solutions 
+        
+        #Sequential 
+        # solutions_all = gen_N_solutions(N, P)
+        # solutions_all = repair_N_solutions(solutions_all)
 
-    scores = np.zeros(len(solutions_all))
-    for i in range(len(solutions_all)): 
-        scores[i] = length_solution(solutions_all[i])
-    
-    best_score = min(scores)
-    idx = np.argmin(scores)
-    best_solution = solutions_all[idx]
+        #Parallel 
+        solutions_all = gen_N_solutions_multiprocess(N, P)
+        solutions_all = repair_N_solutions_multiprocess(solutions_all)
 
-    indices_selected = np.argpartition(scores, K)
-    solutions_elite = []
-    for i in indices_selected[:K]:
-        solutions_elite.append(solutions_all[i])
+        scores = np.zeros(N)
+        for sol in solutions_all: 
+            score = length_solution(sol)
+            scores[i] = score
+            
+            #Keep track of best found solution thus far 
+            if score < best_score: 
+                best_score = score
+                best_solution = sol
 
-    solutions_elite = np.array(solutions_elite, dtype=object) #necessary? 
-    # routes_elite = np.concatenate(solutions_elite)
+            #Keep track of the K most elite solutions 
+            solutions_elite = []
+            solutions_elite_scores = np.full(num_elite, np.inf)
+            if len(solutions_elite) <= num_elite: 
+                solutions_elite.append(sol)
+                solutions_elite_scores[len(solutions_elite)-1] = score
+            else:
+                if score < min(solutions_elite_scores): 
+                    idx = np.argmin(solutions_elite_scores)
+                    solutions_elite_scores[idx] = score
+                    solutions_elite[idx] = sol 
 
+        # indices_selected = np.argpartition(scores, K)
+        # solutions_elite = []
+        # for i in indices_selected[:K]:
+        #     solutions_elite.append(solutions_all[i])
 
-    #Perform Local Search on the x best solution 
+        solutions_elite = np.array(solutions_elite, dtype=object) #necessary? 
 
-    #Update the Pij matrix 
-    alpha = 0.4 #between 0.4 and 0.9
-    P_new = np.zeros((n+2, n+2))
-    total_routes = 0
+        #Perform Local Search on the x best solution 
 
-    for solution in solutions_elite:
-        for route in solution:
-            total_routes += 1
-            masked_route = np.append(route[route <= n], 2*n+1)
-            for i in range(len(masked_route)-1):
-                if masked_route[i+1] == 2*n+1:
-                    P_new[masked_route[i],n+1] += 1
-                else: 
-                    P_new[masked_route[i], masked_route[i+1]] += 1
+        #Update the Pij matrix
+        alpha = 0.4 #between 0.4 and 0.9
+        P_new = np.zeros((n+2, n+2))
+        total_routes = 0
 
-    P_new[0] = P[0]/total_routes
-    P_new[1:] = P[1:]/len(solutions_elite)
+        for solution in solutions_elite:
+            for route in solution:
+                total_routes += 1
+                masked_route = np.append(route[route <= n], 2*n+1)
+                for i in range(len(masked_route)-1):
+                    if masked_route[i+1] == 2*n+1:
+                        P_new[masked_route[i],n+1] += 1
+                    else: 
+                        P_new[masked_route[i], masked_route[i+1]] += 1
 
-    P = alpha*P + (1-alpha)*P_new #smoothing of pij updates 
+        P_new[0] = P[0]/total_routes
+        P_new[1:] = P[1:]/len(solutions_elite)
 
-print(best_score)
-print(best_solution)
+        P = alpha*P + (1-alpha)*P_new #smoothing of pij updates 
 
-print("--- %s seconds ---" % (time.time() - start_time))
+    print(best_score)
+    print(best_solution)
 
+    print("--- %s seconds ---" % (time.time() - start_time))
