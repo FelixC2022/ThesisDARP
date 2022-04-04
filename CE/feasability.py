@@ -21,7 +21,7 @@ def length_solution(solution):
     total = 0 
     for route in solution: 
         total += length_route(route)
-    # total += len(solution)*100
+    total += (len(solution)-K)*100
     return total 
 
 def calculate_ads(route, start):

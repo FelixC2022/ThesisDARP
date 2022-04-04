@@ -1,5 +1,6 @@
 from route_gen import *
 from feasability import *
+from repair_routes import *
 
 import numpy as np 
 import time
@@ -9,15 +10,17 @@ start_time = time.time()
 
 #Initialization
 best = np.inf
-N = 50 #num of solutions to generate
-K = 20 #num of elite solutions to select 
+N = 10 #num of solutions to generate
+K = 3 #num of elite solutions to select 
 
 P = np.full((n+2, n+2), 1/((n+2)*(n+2))) #uniform initialization of P 
 
-for i in tqdm(range(10)):
+for i in tqdm(range(15)):
     # Generate N solutions & select the K best solutions 
     
     solutions_all = gen_N_solutions(N, P)
+
+    solutions_all = [repair_sol(sol) for sol in solutions_all]
 
     scores = np.zeros(len(solutions_all))
     for i in range(len(solutions_all)): 
@@ -37,7 +40,6 @@ for i in tqdm(range(10)):
 
 
     #Perform Local Search on the x best solution 
-
 
     #Update the Pij matrix 
     alpha = 0.4 #between 0.4 and 0.9
@@ -63,3 +65,4 @@ print(best_score)
 print(best_solution)
 
 print("--- %s seconds ---" % (time.time() - start_time))
+
