@@ -1,7 +1,7 @@
 import pandas as pd 
 import numpy as np
 
-path = 'data/a3-18.txt'
+path = 'data/a2-16.txt'
 
 def load_instance(path):
     settings = pd.read_csv(path, sep=" ", header=None, nrows=1)

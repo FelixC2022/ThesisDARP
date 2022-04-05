@@ -84,8 +84,9 @@ def route_exchange(solution, k_max):
 
     return cost_saving, new_route1, new_route2
 
-saving, route1, route2 = route_exchange(sol, 3)
+saving, route1, route2 = route_exchange(sol, 4)
 
+print(length_solution(sol))
 print(saving)
 
 print("--- %s seconds ---" % (time.time() - start_time))
