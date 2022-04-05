@@ -1,7 +1,7 @@
 import pandas as pd 
 import numpy as np
 
-path = 'CE/data/a2-16.txt'
+path = 'data/a3-18.txt'
 
 def load_instance(path):
     settings = pd.read_csv(path, sep=" ", header=None, nrows=1)
@@ -29,6 +29,10 @@ def load_instance(path):
     l = vertices[:,5]
     l = np.array(l, dtype=int)
     
+    #Here tighten time windows
+
+
+
     return K, n, T, Q, L, x_co, y_co, s, cap, e, l 
 
 
