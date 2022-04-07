@@ -27,12 +27,13 @@ if __name__ == '__main__':
         #Parallel 
         solutions_all = gen_N_solutions_multiprocess(N, P)
         solutions_all = repair_N_solutions_multiprocess(solutions_all)
+        solutions_all = list(solutions_all)
 
         scores = np.zeros(N)
         for j in range(len(solutions_all)): 
             sol = solutions_all[j]
             score = length_solution(sol)
-            scores[i] = score
+            scores[j] = score
             
             #Keep track of best found solution thus far 
             if score < best_score: 
