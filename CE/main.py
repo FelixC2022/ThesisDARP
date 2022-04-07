@@ -15,9 +15,9 @@ if __name__ == '__main__':
     N = 50 #num of solutions to generate
     num_elite = 15 #num of elite solutions to select 
 
-    P = np.full((n+2, n+2), 1/((n+2)*(n+2))) #uniform initialization of P 
+    P = np.full((n+2, n+2), 1/((n+2)*(n+2))) #uniform initialization of P, CORRECT TO DO infeasible transitions should be 0 
 
-    for i in tqdm(range(50)):
+    for i in tqdm(range(10)):
         # Generate N solutions & select the K best solutions 
         
         #Sequential 
@@ -64,9 +64,10 @@ if __name__ == '__main__':
         P_new = np.zeros((n+2, n+2))
         total_routes = 0
 
-        for solution in solutions_elite:
-            for route in solution:
+        for sol in solutions_elite:
+            for i in range(len(sol[2])):
                 total_routes += 1
+                route = gen_route(sol, i)
                 masked_route = np.append(route[route <= n], 2*n+1)
                 for i in range(len(masked_route)-1):
                     if masked_route[i+1] == 2*n+1:
