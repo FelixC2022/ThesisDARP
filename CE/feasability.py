@@ -2,8 +2,6 @@ from load_instance import K, n, T, Q, L, x_co, y_co, s, cap, e, l
 
 import numpy as np 
 
-import time
-
 #Helper function 
 def distance(i,j): 
     return np.linalg.norm((np.array((x_co[i],y_co[i])) - (np.array((x_co[j],y_co[j])))))  
@@ -20,6 +18,7 @@ def length_route(solution, route_idx):
     length = 0
 
     vertex = RI[route_idx][0]
+    length += dist[0, vertex]
     while vertex != 2*n+1:
         length += dist[vertex, succ[vertex-1]]
         vertex = succ[vertex-1]

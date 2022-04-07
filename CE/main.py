@@ -12,12 +12,12 @@ if __name__ == '__main__':
 
     #Initialization
     best_score = np.inf
-    N = 50 #num of solutions to generate
-    num_elite = 15 #num of elite solutions to select 
+    N = 20 #num of solutions to generate
+    num_elite = 5 #num of elite solutions to select 
 
     P = np.full((n+2, n+2), 1/((n+2)*(n+2))) #uniform initialization of P, CORRECT TO DO infeasible transitions should be 0 
 
-    for i in tqdm(range(10)):
+    for i in tqdm(range(25)):
         # Generate N solutions & select the K best solutions 
         
         #Sequential 
@@ -29,7 +29,8 @@ if __name__ == '__main__':
         solutions_all = repair_N_solutions_multiprocess(solutions_all)
 
         scores = np.zeros(N)
-        for sol in solutions_all: 
+        for j in range(len(solutions_all)): 
+            sol = solutions_all[j]
             score = length_solution(sol)
             scores[i] = score
             

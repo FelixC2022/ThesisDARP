@@ -3,7 +3,6 @@ from feasability import *
 
 import numpy as np 
 import concurrent.futures
-import time 
 import copy 
 
 
@@ -60,11 +59,12 @@ def get_insertions_all(solution, route_idx):
     if (num_routes-1) < route_idx:
         combis.append([999,999])
 
-    route = gen_route(solution, route_idx)
+    else: 
+        route = gen_route(solution, route_idx)
 
-    for i in range(len(route[:-1])):
-        for j in range(i, len(route[:-1])):
-            combis.append([route[i],route[j]])
+        for i in range(len(route[:-1])):
+            for j in range(i, len(route[:-1])):
+                combis.append([route[i],route[j]])
         
     return combis
 
@@ -112,20 +112,13 @@ def repair_N_solutions_multiprocess(solutions_all):
     return results
 
 
+# P = np.full((n+2, n+2), 1/((n+2)*(n+2))) #uniform initialization of P, CORRECT TO DO infeasible transitions should be 0 
+# sol = gen_solution(P)
 
-if __name__ == '__main__':
+# rep = repair_sol(sol)
 
-    start_time = time.time()
+# print(len(sol[2]))
+# print(length_solution(sol))
 
-    N = 100
-    P = np.full((n+2, n+2), 1/((n+2)*(n+2))) #uniform initialization of P, CORRECT TO DO infeasible transitions should be 0 
-
-    sol = gen_solution(P)
-
-    rep = repair_sol(sol)
-
-    print(len(sol[2]))
-    print(len(rep[2]))
-
-    print(f'finished in {time.time()-start_time} secs')
-
+# print(len(rep[2]))
+# print(length_solution(rep))
