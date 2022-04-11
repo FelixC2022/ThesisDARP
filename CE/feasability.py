@@ -126,8 +126,8 @@ def calc_Fi(i, route, W, B, RT):
     return Fi
 
 def eight_step(route): 
-
-    A, B, W, D, Load, RT = calculate_ads(route, start = e[route[0]])
+    start = e[route[0]]
+    A, B, W, D, Load, RT = calculate_ads(route, start = start )
 
     if not check_tw(route, B):
         return False

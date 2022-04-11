@@ -25,7 +25,7 @@ def empty_route(route, seq):
 def get_insertions_all_route(route):
     combis = []
     for i in range(len(route)-1):
-        for j in range(len(route)-1):
+        for j in range(i, len(route)-1):
             combis.append([route[i], route[j]])
     return combis 
 
@@ -76,12 +76,15 @@ def insert_seq(route, seq):
                 shortest = length
                 chosen_route = new_route
 
-        if insertion_found:
+        if not insertion_found:
+            return False, route #if a user can't be inserted stop and try in different order
+        
+        else: 
             route = chosen_route
-        else:
-            print(f"No insertion found for user {user}") #what do we do if we cannot insert the user?? 
+        
 
-    return route
+    return True, chosen_route #old_route
+
 
 
 def gen_solution_routes(routes):
@@ -107,6 +110,7 @@ def gen_solution_routes(routes):
 
 def route_exchange(solution, k_max): 
     RI = solution[2]
+    print(RI)
 
     selected_routes = random.sample(range(len(RI)), 2)
     route1_idx = selected_routes[0]
@@ -121,9 +125,21 @@ def route_exchange(solution, k_max):
     while k >= min(len(route1), len(route2)):
         k = random.choice(range(1,k_max+1)) 
 
-    #select random start
-    start1 = random.choice(range(1, len(route1)-k)) 
-    start2 = random.choice(range(1, len(route2)-k))
+    if len(route1)-k == len(route2)-k == 1: 
+        start1 = 1
+        start2 = 1 
+
+    elif len(route1)-k == 1: 
+        start1 = 1
+        start2 = random.choice(range(1, len(route2)-k))
+
+    elif len(route2)-k ==1: 
+        start1 = random.choice(range(1, len(route1)-k))
+        start2 = 1
+        
+    else:
+        start1 = random.choice(range(1, len(route1)-k)) 
+        start2 = random.choice(range(1, len(route2)-k))
 
 
     #generate the sequences
@@ -136,8 +152,23 @@ def route_exchange(solution, k_max):
     route1_empty = empty_route(route1, seq1)
     route2_empty = empty_route(route2, seq2)
 
-    new_route2 = insert_seq(route2_empty, seq1)
-    new_route1 = insert_seq(route1_empty, seq2)
+    for i in range(10): 
+        random.shuffle(seq1)
+        check1, new_route2 = insert_seq(route2_empty, seq1)
+        if check1:
+            break
+    
+    if check1 == False: 
+        return 0, solution #return old solution 
+
+    for i in range(10):
+        random.shuffle(seq2)
+        check2, new_route1 = insert_seq(route1_empty, seq2)
+        if check2:
+            break
+
+    if check2 == False:
+        return 0, solution #return old solution 
 
     #calculate savings
     cost_old = (length_route_list(route1) + length_route_list(route2))
@@ -150,7 +181,7 @@ def route_exchange(solution, k_max):
         if i not in selected_routes: 
             route = gen_route(solution, i)
             routes.append(route)
-            
+
     #Insert the vertices that could not be inserted into their assigned route
 
     if cost_saving > 0: 
@@ -169,18 +200,17 @@ P = np.full((n+2, n+2), 1/((n+2)*(n+2))) #uniform initialization of P
 sol = gen_solution(P)
 sol = repair_sol(sol)
 
-print(length_solution(sol))
+
 
 start_time = time.time()
 
 saving, new_solution = route_exchange(sol, 4)
 
-
 print("--- %s seconds ---" % (time.time() - start_time))
 
-
 print(saving)
+print(saving/length_solution(sol))
 
 print(new_solution)
 
-print(length_solution(new_solution))
+# print(length_solution(new_solution))
