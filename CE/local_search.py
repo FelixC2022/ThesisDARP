@@ -5,6 +5,7 @@ from repair_routes import *
 import numpy as np 
 import time 
 import random
+import concurrent.futures
 
 #ROUTE EXCHANGE
 def add_all(seq):
@@ -108,19 +109,19 @@ def gen_solution_routes(routes):
     return solution
         
 
-def route_exchange(solution, k_max): 
+def route_exchange(solution): 
     RI = solution[2]
-    print(RI)
 
     selected_routes = random.sample(range(len(RI)), 2)
     route1_idx = selected_routes[0]
     route2_idx = selected_routes[1]
 
     #routes 
-    route1 = gen_route(sol, route1_idx)
-    route2 = gen_route(sol, route2_idx)
+    route1 = gen_route(solution, route1_idx)
+    route2 = gen_route(solution, route2_idx)
 
     #select lenght sequence
+    k_max = 4
     k = random.choice(range(1,k_max+1)) 
     while k >= min(len(route1), len(route2)):
         k = random.choice(range(1,k_max+1)) 
@@ -152,7 +153,7 @@ def route_exchange(solution, k_max):
     route1_empty = empty_route(route1, seq1)
     route2_empty = empty_route(route2, seq2)
 
-    for i in range(10): 
+    for i in range(5): 
         random.shuffle(seq1)
         check1, new_route2 = insert_seq(route2_empty, seq1)
         if check1:
@@ -161,7 +162,7 @@ def route_exchange(solution, k_max):
     if check1 == False: 
         return 0, solution #return old solution 
 
-    for i in range(10):
+    for i in range(5):
         random.shuffle(seq2)
         check2, new_route1 = insert_seq(route1_empty, seq2)
         if check2:
@@ -186,31 +187,41 @@ def route_exchange(solution, k_max):
 
     if cost_saving > 0: 
         new_solution = gen_solution_routes(routes) #make the new succ/pre/ri based on the new route 
-
+        return cost_saving, new_solution
     else: 
-        new_solution = solution 
+        return 0, solution
 
-    
-    return cost_saving, new_solution
 
+
+
+def route_exchange_N_multiprocess(solutions_all):
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        result = executor.map(route_exchange, solutions_all)
+    return result
+
+
+def route_exchange_N(solutions_all):
+    result = [route_exchange(sol) for sol in solutions_all]
+    return result
 
 #TESTING 
+if __name__ == '__main__':
+    P = np.full((n+2, n+2), 1/((n+2)*(n+2))) 
+    N = 20
+    sols = gen_N_solutions_multiprocess(N, P)
+    sols = repair_N_solutions_multiprocess(sols)
+    sols = list(sols)
 
-P = np.full((n+2, n+2), 1/((n+2)*(n+2))) #uniform initialization of P 
-sol = gen_solution(P)
-sol = repair_sol(sol)
+    start_time = time.time()
+
+    results = route_exchange_N_multiprocess(sols)
+
+    print("--- %s seconds ---" % (time.time() - start_time))
+
+    savings = [res[0] for res in results]
+    new_solutions = [res[1] for res in results]
+    scores = [length_solution(i) for i in sols]
 
 
-
-start_time = time.time()
-
-saving, new_solution = route_exchange(sol, 4)
-
-print("--- %s seconds ---" % (time.time() - start_time))
-
-print(saving)
-print(saving/length_solution(sol))
-
-print(new_solution)
-
-# print(length_solution(new_solution))
+    print(savings)
+    print(max(savings))
