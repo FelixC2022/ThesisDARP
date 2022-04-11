@@ -12,12 +12,12 @@ if __name__ == '__main__':
 
     #Initialization
     best_score = np.inf
-    N = 20 #num of solutions to generate
-    num_elite = 5 #num of elite solutions to select 
+    N = 5 #num of solutions to generate
+    num_elite = 3 #num of elite solutions to select 
 
     P = np.full((n+2, n+2), 1/((n+2)*(n+2))) #uniform initialization of P, CORRECT TO DO infeasible transitions should be 0 
 
-    for i in tqdm(range(25)):
+    for i in tqdm(range(100)):
         # Generate N solutions & select the K best solutions 
         
         #Sequential 

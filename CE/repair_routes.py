@@ -110,15 +110,3 @@ def repair_N_solutions_multiprocess(solutions_all):
         results = executor.map(repair_sol, solutions_all)
 
     return results
-
-
-# P = np.full((n+2, n+2), 1/((n+2)*(n+2))) #uniform initialization of P, CORRECT TO DO infeasible transitions should be 0 
-# sol = gen_solution(P)
-
-# rep = repair_sol(sol)
-
-# print(len(sol[2]))
-# print(length_solution(sol))
-
-# print(len(rep[2]))
-# print(length_solution(rep))

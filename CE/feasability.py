@@ -1,10 +1,12 @@
 from load_instance import K, n, T, Q, L, x_co, y_co, s, cap, e, l
 
 import numpy as np 
+from numba import njit 
 
 #Helper function 
 def distance(i,j): 
     return np.linalg.norm((np.array((x_co[i],y_co[i])) - (np.array((x_co[j],y_co[j])))))  
+
 
 dist = np.full((2*n+2,2*n+2), np.inf) #2n+2 because 2n users and 2 depots
 for i in range(2*n+2):  #we could avoid some computations still. However, I think the effect will be minimal 
