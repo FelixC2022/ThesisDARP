@@ -168,10 +168,6 @@ def gen_new_solution(solution, user, indices, route_idx): #indices = list contai
             new_solution = insert_not_consecutive(solution, user, indices, route_idx)
 
 
-    if RI[route_idx][2] > 16: 
-        print('tis weer van dat')
-
-
     return new_solution
 
 

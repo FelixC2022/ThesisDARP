@@ -1,6 +1,8 @@
-from route_gen import *
+from load_instance import *
 from feasability import *
+from route_gen import *
 from repair_routes import *
+from local_search.route_exchange import *
 
 import numpy as np 
 import time
@@ -10,21 +12,27 @@ if __name__ == '__main__':
 
     start_time = time.time()
 
-    #Initialization
+    #Initialization 
     best_score = np.inf
-    N = 5 #num of solutions to generate
-    num_elite = 3 #num of elite solutions to select 
+    N = 20 #num of solutions to generate
+    num_elite = 5 #num of elite solutions to select 
 
-    P = np.full((n+2, n+2), 1/((n+2)*(n+2))) #uniform initialization of P, CORRECT TO DO infeasible transitions should be 0 
+    #Generate P start 
+    P = np.full((n+2, n+2), 1)
+    P[0,-1] = 0 #from depot to depot 
+    for i in range(len(P)): 
+        P[i,i] = 0 #to itself 
+        P[i, -1] = 0 #from a pickup to end_depot 
+        P[-1, i] = 0 #from end_depot to a pickup 
 
-    for i in tqdm(range(100)):
+    total = 0 
+    for row in P: 
+        total += sum(row)
+    P = P/total  #normalize
+
+
+    for i in tqdm((range(20))):
         # Generate N solutions & select the K best solutions 
-        
-        #Sequential 
-        # solutions_all = gen_N_solutions(N, P)
-        # solutions_all = repair_N_solutions(solutions_all)
-
-        #Parallel 
         solutions_all = gen_N_solutions_multiprocess(N, P)
         solutions_all = repair_N_solutions_multiprocess(solutions_all)
         solutions_all = list(solutions_all)
@@ -40,33 +48,28 @@ if __name__ == '__main__':
                 best_score = score
                 best_solution = sol
 
-            #Keep track of the K most elite solutions 
-            solutions_elite = []
-            solutions_elite_scores = np.full(num_elite, np.inf)
-            if len(solutions_elite) <= num_elite: 
-                solutions_elite.append(sol)
-                solutions_elite_scores[len(solutions_elite)-1] = score
-            else:
-                if score < min(solutions_elite_scores): 
-                    idx = np.argmin(solutions_elite_scores)
-                    solutions_elite_scores[idx] = score
-                    solutions_elite[idx] = sol 
-
-        # indices_selected = np.argpartition(scores, K)
-        # solutions_elite = []
-        # for i in indices_selected[:K]:
-        #     solutions_elite.append(solutions_all[i])
-
+        idx_elite = np.argpartition(scores, num_elite)
+        solutions_elite = []
+        solutions_elite = [solutions_all[i] for i in idx_elite[:num_elite]]   
         solutions_elite = np.array(solutions_elite, dtype=object) #necessary? 
 
         #Perform Local Search on the x best solution 
+        result = route_exchange_N_multiprocess(solutions_elite)
+        result = list(result)
+        solutions_elite_ls = [res[1] for res in result] #index 0 stores the saving 
+
+        for sol in solutions_elite_ls: 
+            score = length_solution(sol)
+            if score < best_score: 
+                best_score = score
+                best_solution = sol
 
         #Update the Pij matrix
         alpha = 0.4 #between 0.4 and 0.9
         P_new = np.zeros((n+2, n+2))
         total_routes = 0
 
-        for sol in solutions_elite:
+        for sol in solutions_elite_ls:
             for i in range(len(sol[2])):
                 total_routes += 1
                 route = gen_route(sol, i)

@@ -1,7 +1,8 @@
 import pandas as pd 
 import numpy as np
 
-path = 'CE/data/a2-16.txt'
+path = 'CE/data/a4-16.txt'
+
 
 def load_instance(path):
     settings = pd.read_csv(path, sep=" ", header=None, nrows=1)
@@ -28,12 +29,22 @@ def load_instance(path):
     e = np.array(e, dtype=int)
     l = vertices[:,5]
     l = np.array(l, dtype=int)
-    
-    #Here tighten time windows
-
-
 
     return K, n, T, Q, L, x_co, y_co, s, cap, e, l 
 
 
 K, n, T, Q, L, x_co, y_co, s, cap, e, l  = load_instance(path)
+
+
+#Helper function 
+def distance(i,j): 
+    return np.linalg.norm((np.array((x_co[i],y_co[i])) - (np.array((x_co[j],y_co[j])))))  
+
+
+dist = np.full((2*n+2,2*n+2), np.inf) #2n+2 because 2n users and 2 depots
+for i in range(2*n+2):  #we could avoid some computations still. However, I think the effect will be minimal 
+    for j in range(2*n+2): 
+        dist[i,j] = distance(i, j)
+
+
+#Tighten time windows 

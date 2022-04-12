@@ -1,5 +1,6 @@
-from route_gen import *
+from load_instance import *
 from feasability import *
+from route_gen import *
 
 import numpy as np 
 import concurrent.futures
@@ -70,12 +71,13 @@ def get_insertions_all(solution, route_idx):
 
 
 def repair_sol(solution):
-    routes_selected, again, sol = preprocess_repair(solution)
+    routes_selected, again, sol = preprocess_repair(solution) #routes_selected is not used but needs to be assigned otherwihse error
 
     sol = copy.deepcopy(sol)
 
     for user in again: 
         insertion_found = False
+
         shortest = np.inf
         route_idx = 0 
 
@@ -92,9 +94,10 @@ def repair_sol(solution):
                     insertion_found = True
                     shortest = lenght
                     current_best_sol = new_sol
+                    break #as soon as insertion is found go to the next 
             
             if insertion_found:   
-                sol = current_best_sol
+                sol = current_best_sol #if no insertion return the old sol 
                 
             route_idx += 1
 
@@ -108,5 +111,4 @@ def repair_N_solutions(solutions_all):
 def repair_N_solutions_multiprocess(solutions_all):
     with concurrent.futures.ProcessPoolExecutor() as executor: 
         results = executor.map(repair_sol, solutions_all)
-
     return results
