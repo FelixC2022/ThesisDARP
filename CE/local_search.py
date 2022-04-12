@@ -7,31 +7,9 @@ from repair_routes import *
 import numpy as np 
 import time 
 import random
+import copy
 import concurrent.futures
 
-#@@@@@@@@@@@@@@@@@@ TEST INSTANCE #@@@@@@@@@@@@@@@@@@
-P = np.full((n+2, n+2), 1)
-P[0,-1] = 0 #from depot to depot 
-for i in range(len(P)): 
-    P[i,i] = 0 #to itself 
-    P[i, -1] = 0 #from a pickup to end_depot 
-    P[-1, i] = 0 #from end_depot to a pickup 
-
-total = 0 
-for row in P: 
-    total += sum(row)
-P = P/total  #normalize
-
-
-sol = gen_solution(P)
-sol = repair_sol(sol)
-
-cost_initial = length_solution(sol)
-
-#Display the routes 
-routes = []
-for i in range(len(sol[2])):
-    routes.append(gen_route(sol, i))
 
 #@@@@@@@@@@@@@@@@@@ UTILS #@@@@@@@@@@@@@@@@@@
 
@@ -134,7 +112,7 @@ def insert_seq(route, seq):
 def route_exchange(solution): 
     RI = solution[2]
 
-    for i in range(5):
+    for _ in range(5):
         selected_routes = random.sample(range(len(RI)), 2)
         route1_idx = selected_routes[0]
         route2_idx = selected_routes[1]
@@ -259,71 +237,106 @@ def dist_Lg_all(route):
 
     return dist
 
+def relocate(solution):
 
-# print(routes)
+    cost_old = length_solution(solution)
+
+    #Display the routes 
+    routes = []
+    for i in range(len(sol[2])):
+        routes.append(gen_route(sol, i))
+
+    #select users to insert again (based on distance to Lg)
+    again = np.zeros(len(routes), dtype=int)
+    for i in range(len(routes)):
+        route = routes[i] 
+        dists = dist_Lg_all(route)
+        vert = route[np.where(dists == max(dists))]
+        if vert > n: 
+            vert = vert-n
+        again[i] = vert
+
+    #clear the routes 
+    for i in range(len(again)):
+        user = again[i] 
+
+        i1 = np.where(routes[i] == user)
+        routes[i] = np.delete(routes[i], i1)
+
+        i2 = np.where(routes[i] == user+n)
+        routes[i] = np.delete(routes[i], i2)
+
+    routes_old = copy.deepcopy(routes)
+
+
+    #insert the users again in a random rooute & try 5 times to get an improving solution 
+    for _ in range(5):
+        routes = copy.deepcopy(routes_old)
+
+        for i in range(len(again)):
+            user = again[i]  #i is the original route of the user
+            routes_idx = np.delete(np.arange(len(routes), dtype=int), i)
+            random.shuffle(routes_idx)
+            routes_idx = np.append(routes_idx, i) #try original route if no insertion can bou found in the other routes 
+
+            insertion_found = False
+            for idx in routes_idx:
+
+                route = routes[idx]
+                combis = get_insertions_all_route(route)
+
+                shortest = np.inf 
+                for combi in combis:
+                    new_route = gen_new_route(route, user, combi)
+                    check = eight_step(new_route)
+                    length = length_route_list(new_route)
+                    if check and length < shortest: 
+                        insertion_found = True
+                        shortest = length
+                        chosen_route = new_route
+                
+                if insertion_found: 
+                    routes[idx] = chosen_route
+                    break #as soon as an insertion is found in a route don't look to the other routes 
+                
+            if not insertion_found: #delete later
+                print(f'no insertion for {user}')
+            
+        cost_new = 0 
+        for i in routes: 
+            cost_new += length_route_list(i)
+        
+        if cost_old > cost_new: 
+            print(f'improvment found {cost_old-cost_new} old was {cost_old}')
+            new_sol = gen_solution_routes(routes)
+            return new_sol
+
+    print('no improvement')
+    
+    return solution #if after the 5 iterations no improving solutino is found return original solution
+ 
+
+
+#@@@@@@@@@@@@@@@@@@ TEST INSTANCE #@@@@@@@@@@@@@@@@@@
+P = np.full((n+2, n+2), 1)
+P[0,-1] = 0 #from depot to depot 
+for i in range(len(P)): 
+    P[i,i] = 0 #to itself 
+    P[i, -1] = 0 #from a pickup to end_depot 
+    P[-1, i] = 0 #from end_depot to a pickup 
+
+total = 0 
+for row in P: 
+    total += sum(row)
+P = P/total  #normalize
+
+sol = gen_solution(P)
+sol = repair_sol(sol)
+
 
 start = time.time()
 
-again = np.zeros(len(routes), dtype=int)
-for i in range(len(routes)):
-    route = routes[i] 
-    dists = dist_Lg_all(route)
-    vert = route[np.where(dists == max(dists))]
-    if vert > n: 
-        vert = vert-n
-    again[i] = vert
-
-# print(again)
-
-for i in range(len(again)):
-    user = again[i] 
-
-    i1 = np.where(routes[i] == user)
-    routes[i] = np.delete(routes[i], i1)
-
-    i2 = np.where(routes[i] == user+n)
-    routes[i] = np.delete(routes[i], i2)
-
-
-for i in range(len(again)):
-    user = again[i]  #i is the original route of the user
-    routes_idx = np.delete(np.arange(len(routes), dtype=int), i)
-
-    insertion_found = False
-    while insertion_found == False: #if all routes have been tried and no insertion is found this will loop forever 
-
-        if len(routes_idx) == 0: 
-            print('no insertion was found')
-            break 
-
-        idx = random.choice(routes_idx)
-        routes_idx = np.delete(routes_idx, np.where(routes_idx == idx))
-
-        route = routes[idx]
-        combis = get_insertions_all_route(route)
-
-        shortest = np.inf 
-        for combi in combis:
-            new_route = gen_new_route(route, user, combi)
-            check = eight_step(new_route)
-            length = length_route_list(new_route)
-            if check and length < shortest: 
-                insertion_found = True
-                shortest = length
-                chosen_route = new_route
-        
-        if insertion_found: 
-            routes[idx] = chosen_route
-        
-
-# print(routes)
-
-cost_new = 0 
-for i in routes: 
-    cost_new += length_route_list(i)
-
-print(cost_initial)
-print(cost_initial-cost_new)
+new_sol = relocate(sol)
 
 
 print(f'took {time.time()-start} secs to finish')
