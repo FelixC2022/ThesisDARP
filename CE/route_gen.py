@@ -7,15 +7,7 @@ import copy
 import concurrent.futures
 
 
-def get_unserved_solution(solution):
-    succ = solution[0]
-    unserved = []
-    for i in range(len(succ)): 
-        if succ[i] == 999 and i < n: #not <= python is zero index meaning index n-1 equals user n 
-            unserved.append(i+1)
-    return unserved
-
-#Return the possible insertion combinations of a new user in a route; only considering everything after the last pickup vertex
+#@@@@@@@@@@@@@@@@@@ GENARATE SOLUTION BY INSERTING A USER #@@@@@@@@@@@@@@@@@@
 def get_insertions(solution, route_idx):  
     #The insertion index indicates the index before which the new user will be inserted referring to the orginal tour 
     combis = []
@@ -41,7 +33,6 @@ def get_insertions(solution, route_idx):
                 combis.append([after_pickup[i],after_pickup[j]])
                 
     return combis
-
 
 def insert_consecutive(solution, user, indices, route_idx):
     succ = copy.deepcopy(solution[0])
@@ -138,7 +129,6 @@ def insert_not_consecutive(solution, user, indices, route_idx):
 
     return solution
 
-
 def gen_new_solution(solution, user, indices, route_idx): #indices = list containing vertices after which to insert pickup and resp. dropoff
     succ = copy.deepcopy(solution[0])
     pre = copy.deepcopy(solution[1])
@@ -170,6 +160,15 @@ def gen_new_solution(solution, user, indices, route_idx): #indices = list contai
 
     return new_solution
 
+#@@@@@@@@@@@@@@@@@@ HELPER #@@@@@@@@@@@@@@@@@@
+#If error unserved to top 
+def get_unserved_solution(solution):
+    succ = solution[0]
+    unserved = []
+    for i in range(len(succ)): 
+        if succ[i] == 999 and i < n: #not <= python is zero index meaning index n-1 equals user n 
+            unserved.append(i+1)
+    return unserved
 
 def gen_route(solution, route_idx): 
     succ = solution[0]
@@ -200,6 +199,9 @@ def get_feasible_users(solution, insertions_pos, unserved, route_idx):
                 feasible_users.append(user)
                 break 
     return feasible_users
+
+
+#@@@@@@@@@@@@@@@@@@ GENERATE SOLUTION FROM SCRATCH #@@@@@@@@@@@@@@@@@@
 
 def gen_solution(P):
 
@@ -259,7 +261,6 @@ def gen_solution(P):
     solution = np.array(solution, dtype=object)
     
     return solution
-
 
 def gen_N_solutions(N, P):
     solutions_all = [gen_solution(P) for _ in range(N)]

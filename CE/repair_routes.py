@@ -7,6 +7,27 @@ import concurrent.futures
 import copy 
 
 
+
+#@@@@@@@@@@@@@@@@@@ HELPER #@@@@@@@@@@@@@@@@@@
+def get_insertions_all(solution, route_idx):  
+    #The insertion index indicates the index before which the new user will be inserted referring to the orginal tour 
+    combis = []
+    RI = solution[2]
+    num_routes = len(RI)
+
+    if (num_routes-1) < route_idx:
+        combis.append([999,999])
+
+    else: 
+        route = gen_route(solution, route_idx)
+
+        for i in range(len(route[:-1])):
+            for j in range(i, len(route[:-1])):
+                combis.append([route[i],route[j]])
+        
+    return combis
+
+#@@@@@@@@@@@@@@@@@@ PREPROCESS #@@@@@@@@@@@@@@@@@@
 def preprocess_repair(sol):
     succ = copy.deepcopy(sol[0])
     pre = copy.deepcopy(sol[1])
@@ -50,25 +71,7 @@ def preprocess_repair(sol):
     return route_idx, again, empty_sol
 
 
-
-def get_insertions_all(solution, route_idx):  
-    #The insertion index indicates the index before which the new user will be inserted referring to the orginal tour 
-    combis = []
-    RI = solution[2]
-    num_routes = len(RI)
-
-    if (num_routes-1) < route_idx:
-        combis.append([999,999])
-
-    else: 
-        route = gen_route(solution, route_idx)
-
-        for i in range(len(route[:-1])):
-            for j in range(i, len(route[:-1])):
-                combis.append([route[i],route[j]])
-        
-    return combis
-
+#@@@@@@@@@@@@@@@@@@ FULL REPAIR #@@@@@@@@@@@@@@@@@@
 
 def repair_sol(solution):
     routes_selected, again, sol = preprocess_repair(solution) #routes_selected is not used but needs to be assigned otherwihse error
@@ -102,7 +105,6 @@ def repair_sol(solution):
             route_idx += 1
 
     return sol
-
 
 def repair_N_solutions(solutions_all):
     solutions_repaired = [repair_sol(sol) for sol in solutions_all]

@@ -298,23 +298,18 @@ def relocate(solution):
                 if insertion_found: 
                     routes[idx] = chosen_route
                     break #as soon as an insertion is found in a route don't look to the other routes 
-                
-            if not insertion_found: #delete later
-                print(f'no insertion for {user}')
-            
+        
         cost_new = 0 
         for i in routes: 
             cost_new += length_route_list(i)
         
         if cost_old > cost_new: 
-            print(f'improvment found {cost_old-cost_new} old was {cost_old}')
             new_sol = gen_solution_routes(routes)
+            #print(f'improvement: {cost_old-cost_new}')
             return new_sol
-
-    print('no improvement')
     
     return solution #if after the 5 iterations no improving solutino is found return original solution
- 
+
 
 
 #@@@@@@@@@@@@@@@@@@ TEST INSTANCE #@@@@@@@@@@@@@@@@@@

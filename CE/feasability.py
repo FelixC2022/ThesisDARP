@@ -2,6 +2,7 @@ from load_instance import *
 
 import numpy as np 
 
+#@@@@@@@@@@@@@@@@@@ HELPER FUNCTIONS #@@@@@@@@@@@@@@@@@@
 def length_route(solution, route_idx): 
     succ = solution[0] 
     RI = solution[2]
@@ -15,7 +16,6 @@ def length_route(solution, route_idx):
         vertex = succ[vertex-1]
 
     return length
-
 
 def length_solution(solution):
     RI = solution[2]
@@ -61,7 +61,7 @@ def calculate_ads(route, start):
     return A, B, W, D, Load, RT
 
 
-#Check TW and Cap if invalid calculate f(route)
+#@@@@@@@@@@@@@@@@@@ PARTIAL CHECKS #@@@@@@@@@@@@@@@@@@
 def check_tw(route, B):
     valid = True
     for i in range(len(route)):
@@ -69,7 +69,6 @@ def check_tw(route, B):
             valid = False
             break 
     return valid 
-
 
 def check_cap(route, Load):
     valid = True 
@@ -79,7 +78,6 @@ def check_cap(route, Load):
             break 
     return valid 
 
-
 def check_ridetime(route, RT): 
     valid = True 
     for i in range(len(route)): 
@@ -88,7 +86,6 @@ def check_ridetime(route, RT):
             break 
     return valid 
 
-
 def check_routeduration(route, B):
     duration = B[-1] - B[0]
     if duration > T: 
@@ -96,7 +93,7 @@ def check_routeduration(route, B):
     else:
         return True 
 
-#Calculate Fi
+#@@@@@@@@@@@@@@@@@@ FORWARD TIME SLACK #@@@@@@@@@@@@@@@@@@
 def calc_Fi(i, route, W, B, RT):
     slacks = np.full(len(route)-i, np.inf)
     idx = 0 
@@ -114,6 +111,8 @@ def calc_Fi(i, route, W, B, RT):
 
     return Fi
 
+
+#@@@@@@@@@@@@@@@@@@ FULL CHECK #@@@@@@@@@@@@@@@@@@
 def eight_step(route): 
     start = e[route[0]]
     A, B, W, D, Load, RT = calculate_ads(route, start = start )

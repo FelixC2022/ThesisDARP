@@ -4,6 +4,8 @@ import numpy as np
 path = 'CE/data/a4-16.txt'
 
 
+#@@@@@@@@@@@@@@@@@@ LOAD INSTANCE DATA #@@@@@@@@@@@@@@@@@@
+
 def load_instance(path):
     settings = pd.read_csv(path, sep=" ", header=None, nrows=1)
 
@@ -32,11 +34,10 @@ def load_instance(path):
 
     return K, n, T, Q, L, x_co, y_co, s, cap, e, l 
 
-
 K, n, T, Q, L, x_co, y_co, s, cap, e, l  = load_instance(path)
 
 
-#Helper function 
+#@@@@@@@@@@@@@@@@@@ DISTANCES #@@@@@@@@@@@@@@@@@@
 def distance(i,j): 
     return np.linalg.norm((np.array((x_co[i],y_co[i])) - (np.array((x_co[j],y_co[j])))))  
 
@@ -47,4 +48,4 @@ for i in range(2*n+2):  #we could avoid some computations still. However, I thin
         dist[i,j] = distance(i, j)
 
 
-#Tighten time windows 
+#@@@@@@@@@@@@@@@@@@ Tighten time windows #@@@@@@@@@@@@@@@@@@
