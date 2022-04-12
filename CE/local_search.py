@@ -189,13 +189,9 @@ def route_exchange(solution):
         
             new_solution = gen_solution_routes(routes) #make the new succ/pre/ri based on the new route 
         
-            return cost_saving, new_solution
-        
-        else: 
-            continue
+            return new_solution
 
-    else: 
-        return 0, solution
+    return solution
 
 def route_exchange_N(solutions_all):
     result = [route_exchange(sol) for sol in solutions_all]
@@ -243,8 +239,8 @@ def relocate(solution):
 
     #Display the routes 
     routes = []
-    for i in range(len(sol[2])):
-        routes.append(gen_route(sol, i))
+    for i in range(len(solution[2])):
+        routes.append(gen_route(solution, i))
 
     #select users to insert again (based on distance to Lg)
     again = np.zeros(len(routes), dtype=int)
@@ -310,28 +306,38 @@ def relocate(solution):
     
     return solution #if after the 5 iterations no improving solutino is found return original solution
 
+def relocate_N_multiprocess(solutions_all):
+    with concurrent.futures.ProcessPoolExecutor() as executor: 
+        result = executor.map(relocate, solutions_all)
+    return result
+
+#@@@@@@@@@@@@@@@@@@ CROSS EXCHANGE #@@@@@@@@@@@@@@@@@@ 
+
+
+
+
 
 
 #@@@@@@@@@@@@@@@@@@ TEST INSTANCE #@@@@@@@@@@@@@@@@@@
-P = np.full((n+2, n+2), 1)
-P[0,-1] = 0 #from depot to depot 
-for i in range(len(P)): 
-    P[i,i] = 0 #to itself 
-    P[i, -1] = 0 #from a pickup to end_depot 
-    P[-1, i] = 0 #from end_depot to a pickup 
+# P = np.full((n+2, n+2), 1)
+# P[0,-1] = 0 #from depot to depot 
+# for i in range(len(P)): 
+#     P[i,i] = 0 #to itself 
+#     P[i, -1] = 0 #from a pickup to end_depot 
+#     P[-1, i] = 0 #from end_depot to a pickup 
 
-total = 0 
-for row in P: 
-    total += sum(row)
-P = P/total  #normalize
+# total = 0 
+# for row in P: 
+#     total += sum(row)
+# P = P/total  #normalize
 
-sol = gen_solution(P)
-sol = repair_sol(sol)
-
-
-start = time.time()
-
-new_sol = relocate(sol)
+# sol = gen_solution(P)
+# sol = repair_sol(sol)
 
 
-print(f'took {time.time()-start} secs to finish')
+# start = time.time()
+
+# new_sol = relocate(sol)
+
+
+# print(f'took {time.time()-start} secs to finish')

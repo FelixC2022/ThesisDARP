@@ -2,11 +2,12 @@ from load_instance import *
 from feasability import *
 from route_gen import *
 from repair_routes import *
-from local_search.route_exchange import *
+from local_search import route_exchange_N_multiprocess, relocate_N_multiprocess
 
 import numpy as np 
 import time
 from tqdm import tqdm
+
 
 if __name__ == '__main__':
 
@@ -14,7 +15,7 @@ if __name__ == '__main__':
 
     #Initialization 
     best_score = np.inf
-    N = 20 #num of solutions to generate
+    N = 15 #num of solutions to generate
     num_elite = 5 #num of elite solutions to select 
 
     #Generate P start 
@@ -37,28 +38,26 @@ if __name__ == '__main__':
         solutions_all = repair_N_solutions_multiprocess(solutions_all)
         solutions_all = list(solutions_all)
 
-        scores = np.zeros(N)
-        for j in range(len(solutions_all)): 
-            sol = solutions_all[j]
-            score = length_solution(sol)
-            scores[j] = score
-            
-            #Keep track of best found solution thus far 
-            if score < best_score: 
-                best_score = score
-                best_solution = sol
+        scores = [length_solution(sol) for sol in solutions_all]
+
+        # scores = np.zeros(N)
+        # for j in range(len(solutions_all)): 
+        #     sol = solutions_all[j]
+        #     score = length_solution(sol)
+        #     scores[j] = score
 
         idx_elite = np.argpartition(scores, num_elite)
-        solutions_elite = []
+        # solutions_elite = []
         solutions_elite = [solutions_all[i] for i in idx_elite[:num_elite]]   
-        solutions_elite = np.array(solutions_elite, dtype=object) #necessary? 
+        # solutions_elite = np.array(solutions_elite, dtype=object) #necessary? 
 
         #Perform Local Search on the x best solution 
-        result = route_exchange_N_multiprocess(solutions_elite)
-        result = list(result)
-        solutions_elite_ls = [res[1] for res in result] #index 0 stores the saving 
+        # solutions_elite = route_exchange_N_multiprocess(solutions_elite)
+        # solutions_elite = relocate_N_multiprocess(solutions_elite)
+        # solutions_elite = list(solutions_elite)
 
-        for sol in solutions_elite_ls: 
+        #again look 
+        for sol in solutions_elite: 
             score = length_solution(sol)
             if score < best_score: 
                 best_score = score
@@ -69,7 +68,7 @@ if __name__ == '__main__':
         P_new = np.zeros((n+2, n+2))
         total_routes = 0
 
-        for sol in solutions_elite_ls:
+        for sol in solutions_elite:
             for i in range(len(sol[2])):
                 total_routes += 1
                 route = gen_route(sol, i)
@@ -85,7 +84,8 @@ if __name__ == '__main__':
 
         P = alpha*P + (1-alpha)*P_new #smoothing of pij updates 
 
+
     print(best_score)
-    print(best_solution)
+
 
     print("--- %s seconds ---" % (time.time() - start_time))

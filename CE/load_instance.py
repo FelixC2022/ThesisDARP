@@ -1,7 +1,7 @@
 import pandas as pd 
 import numpy as np
 
-path = 'CE/data/a4-16.txt'
+path = 'CE/data/a2-16.txt'
 
 
 #@@@@@@@@@@@@@@@@@@ LOAD INSTANCE DATA #@@@@@@@@@@@@@@@@@@
@@ -49,3 +49,14 @@ for i in range(2*n+2):  #we could avoid some computations still. However, I thin
 
 
 #@@@@@@@@@@@@@@@@@@ Tighten time windows #@@@@@@@@@@@@@@@@@@
+H = 1440 #lenght planning horizon 
+for vert in range(2*n+1): #last index not included so +1 
+    if l[vert] - e[vert] == H: #tw is not tight 
+        #outbound request
+        if vert <= n:
+            e[vert] = max(0, e[vert+n]-L-s[vert])
+            l[vert] = min(l[vert+n]-dist[vert,vert+n]-s[vert], H)
+        #inbound request 
+        else: 
+            e[vert] = e[vert-n] + s[vert-n] + dist[vert-n, vert]
+            l[vert] = min(l[vert-n]+s[vert-n]+L, H)
