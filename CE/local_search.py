@@ -67,8 +67,6 @@ def gen_solution_routes(routes):
 
     return solution
         
-
-#@@@@@@@@@@@@@@@@@@ ROUTE EXCHANGE #@@@@@@@@@@@@@@@@@@
 def add_all(seq):
     for i in seq:
         if (i <= n) and (i+n not in seq): 
@@ -82,7 +80,6 @@ def empty_route(route, seq):
         route = np.delete(route, np.where(route == i))
     return route
 
-#we now want to insert seq1 into route2_empty
 def insert_seq(route, seq):
     to_insert = seq[seq <= n] #maybe reshuffle this to add randomization
 
@@ -108,6 +105,8 @@ def insert_seq(route, seq):
         
 
     return True, chosen_route #old_route
+
+#@@@@@@@@@@@@@@@@@@ ROUTE EXCHANGE #@@@@@@@@@@@@@@@@@@
 
 def route_exchange(solution): 
     RI = solution[2]
@@ -154,7 +153,7 @@ def route_exchange(solution):
         route1_empty = empty_route(route1, seq1)
         route2_empty = empty_route(route2, seq2)
 
-        for i in range(5): 
+        for _ in range(5): 
             random.shuffle(seq1)
             check1, new_route2 = insert_seq(route2_empty, seq1)
             if check1:
@@ -164,7 +163,7 @@ def route_exchange(solution):
             #return 0, solution #return old solution 
             continue
 
-        for i in range(5):
+        for _ in range(5):
             random.shuffle(seq2)
             check2, new_route1 = insert_seq(route1_empty, seq2)
             if check2:
@@ -213,7 +212,6 @@ def calc_G(route):
     G[1] = G[1]/len(route[:-1])
     return G 
 
-#Calculated distance between p3 and Lg (line between G and depot)
 def dist_Lg(G, depot, p3):
     dist = np.abs(np.linalg.norm(np.cross(G-depot,p3-depot))/np.linalg.norm(G-depot))
     return dist 
@@ -311,11 +309,133 @@ def relocate_N_multiprocess(solutions_all):
         result = executor.map(relocate, solutions_all)
     return result
 
+#@@@@@@@@@@@@@@@@@@ TEST INSTANCE #@@@@@@@@@@@@@@@@@@ 
+
+#gen test instance
+P = np.full((n+2, n+2), 1)
+P[0,-1] = 0 #from depot to depot 
+for i in range(len(P)): 
+    P[i,i] = 0 #to itself 
+    P[i, -1] = 0 #from a pickup to end_depot 
+    P[-1, i] = 0 #from end_depot to a pickup 
+
+total = 0 
+for row in P: 
+    total += sum(row)
+P = P/total  #normalize
+
+sol = gen_solution(P)
+sol = repair_sol(sol)
+
+
 #@@@@@@@@@@@@@@@@@@ CROSS EXCHANGE #@@@@@@@@@@@@@@@@@@ 
 
+# #gen all the routes 
+# routes = [gen_route(sol, idx) for idx in range(len(sol[2]))]
+# idx_select = random.sample(range(len(routes)), 2)
+# route1 = routes[routes[idx_select[0]]]
+# route2 = routes[routes[idx_select[1]]]
+
+# # Select lenght of sequence and num routes involved
+# k_max = 3
+# k = random.choice(range(1,k_max+1)) 
+
+# while k >= min(len(route1)):
+#     k = random.choice(range(1,k_max+1)) 
+
+# if len(route1)-k == 1: 
+#     start1 = 1
+    
+# else:
+#     start1 = random.choice(range(1, len(route1)-k)) 
+#     start2 = random.choice(range(1, len(route2)-k))
 
 
+# #generate the first sequence 
+# seq1 = route1[start1:start1+k] 
+# seq1 = add_all(seq1) #add the other vertices 
+# route1 = empty_route(route1, seq1)
 
+# route2 = insert_seq(route2, seq1)
+
+
+#@@@@@@@@@@@@@@@@@@ ZERO SPLIT #@@@@@@@@@@@@@@@@@@ 
+def gen_load(route):
+    Load = np.zeros(len(route), dtype=int)
+    for i in range(1,len(route)):
+        if route[i] <= n:
+            Load[i] = Load[i-1] + 1
+        elif route[i] == 2*n+1: 
+            Load[i] = Load[i-1]
+        else:
+            Load[i] = Load[i-1] - 1
+    return Load 
+
+def gen_naturals(route):
+    Load = gen_load(route)
+
+    naturals = []
+    for i in range(len(Load)): 
+        
+        if Load[i-1]==0 and Load[i] == 1:
+            seq = []
+            for j in range(i, len(route)):
+                seq.append(route[j])
+                if Load[j] == 0: 
+                    break  
+            #append 
+            naturals.append(seq)
+            
+    return naturals
+
+def zero_split(solution):
+    routes = [gen_route(solution, idx) for idx in range(len(solution[2]))]
+    idx = random.choice(range(len(routes)))
+    route1 = routes[idx]
+
+    #Select one of the
+    nats = gen_naturals(route1)
+    seq = random.choice(nats)
+    seq = np.array(seq, dtype=int)
+    route1_new = empty_route(route1, seq)
+    routes[idx] = route1_new
+
+    #Select a new route
+    routes_idx = np.delete(np.arange(len(routes), dtype=int), idx)
+    random.shuffle(routes_idx)
+    routes_idx = np.append(routes_idx, idx) #try original route if no insertion can bou found in the other routes 
+
+    for idx2 in routes_idx:
+
+        route2 = routes[idx2]
+
+        #Try to insert the seq in the selected route 
+        check = False
+        for _ in range(3): 
+            check, route2_new = insert_seq(route2, seq)
+            random.shuffle(seq)
+            if check:
+                break
+
+        if check == False: 
+            continue #move on to next route in for loop 
+
+        else: 
+            cost_old = length_route_list(route1) + length_route_list(route2)
+            cost_new = length_route_list(route1_new) + length_route_list(route2_new)
+
+            if cost_new < cost_old: 
+                print(cost_old-cost_new)
+                routes[idx2] = route2_new
+                new_solution = gen_solution_routes(routes)
+                
+                return new_solution 
+
+         
+        return solution
+
+for _ in range(100):
+    new_sol = zero_split(sol)
 
 
 #@@@@@@@@@@@@@@@@@@ TEST INSTANCE #@@@@@@@@@@@@@@@@@@
