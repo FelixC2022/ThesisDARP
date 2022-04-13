@@ -1,54 +1,61 @@
+import pandas as pd 
 import numpy as np
-import pandas as pd
+
+path = 'mcts/data/a2-16.txt'
+
+#@@@@@@@@@@@@@@@@@@ LOAD INSTANCE DATA #@@@@@@@@@@@@@@@@@@
+
+def load_instance(path):
+    settings = pd.read_csv(path, sep=" ", header=None, nrows=1)
+
+    K = settings.loc[0,0] #num vehicles 
+    n = settings.loc[0,1] #num users 
+    T = settings.loc[0,2] #max route duration 
+    Q = settings.loc[0,3] #vehicle cap 
+    L = settings.loc[0,4] #max user ride time 
 
 
-def load_data(path): 
-    instance_dim = pd.read_csv(path, sep=" ", header=None, nrows=1)
-    num_vehs=instance_dim.iat[0,0]
-    num_reqs= instance_dim.iat[0,1]
+    columns = ['id', 'x_coord', 'y_coord', 'service_time', 'cap', 'earliest_tw', 'latest_tw']
+    vertices = pd.read_csv(path,  delim_whitespace=True, skiprows=1, header=None, names=columns)
+    vertices.drop('id', axis=1, inplace=True)
+    vertices = vertices.to_numpy()
 
-    instance_vertices= pd.read_csv(path, sep='\t', header=None,skiprows=num_vehs+1) 
-    instance_vertices.columns= ['id', 'x_coord', 'y_coord', 'service_time', 'max_ride_time', 'demand_resource_1', 'demand_resource_2', 'demand_resource_3', 'demand_resource_4', 'earliest_tw', 'latest_tw']
-    instance_vertices.drop('id', inplace=True, axis=1)
-    
-    instance_vehicles= pd.read_csv(path, sep=" ", header=None,skiprows=1, nrows=num_vehs) 
-    instance_vehicles.columns=['route_duration', 'capacity_resource_1', 'capacity_resource_2', 'capacity_resource_3', 'capacity_resource_4']
+    x_co = vertices[:,0]
+    y_co = vertices[:,1]
+    s = vertices[:,2]
+    s = np.array(s, dtype=int)
+    cap = vertices[:,3]
+    cap = np.array(cap, dtype=int)
+    e = vertices[:,4]
+    e = np.array(e, dtype=int)
+    l = vertices[:,5]
+    l = np.array(l, dtype=int)
 
-    instance_vehicles2=instance_vehicles.to_numpy()
-    route_duration= instance_vehicles2[:,0]  
-    Q=instance_vehicles2[:,1:5] 
+    return K, n, T, Q, L, x_co, y_co, s, cap, e, l 
 
-    instance_vertices2= instance_vertices.to_numpy()
-    x_co=instance_vertices2[:,0] 
-    y_co=instance_vertices2[:,1] 
-    s= instance_vertices2[:,2] 
-    L=instance_vertices2[:,3] 
-    q=instance_vertices2[:,4:8] 
-    e=instance_vertices2[:,8] 
-    l=instance_vertices2[:,9] 
-    R = [0,1,2,3] 
-
-    return num_vehs, num_reqs, route_duration, Q, x_co, y_co, s, L, q, e, l, R
+K, n, T, Q, L, x_co, y_co, s, cap, e, l  = load_instance(path)
 
 
-def get_depot_co(num_vehs):
-    depot_co = np.zeros((num_vehs,2))
+#@@@@@@@@@@@@@@@@@@ DISTANCES #@@@@@@@@@@@@@@@@@@
+def distance(i,j): 
+    return np.linalg.norm((np.array((x_co[i],y_co[i])) - (np.array((x_co[j],y_co[j])))))  
 
-    depots = {
-        0 : [-5,-5],
-        1 : [5,5],
-        2 : [-5,5],
-        3 : [5,-5],
-    }
 
-    counter = 0
-    for i in range(num_vehs):
-        if counter < len(depots):
-            depot_co[i]=depots[counter]
-            counter += 1
+dist = np.full((2*n+2,2*n+2), np.inf) #2n+2 because 2n users and 2 depots
+for i in range(2*n+2):  #we could avoid some computations still. However, I think the effect will be minimal 
+    for j in range(2*n+2): 
+        dist[i,j] = distance(i, j)
+
+
+#@@@@@@@@@@@@@@@@@@ Tighten time windows #@@@@@@@@@@@@@@@@@@
+H = 1440 #lenght planning horizon 
+for vert in range(2*n+1): #last index not included so +1 
+    if l[vert] - e[vert] == H: #tw is not tight 
+        #outbound request
+        if vert <= n:
+            e[vert] = max(0, e[vert+n]-L-s[vert])
+            l[vert] = min(l[vert+n]-dist[vert,vert+n]-s[vert], H)
+        #inbound request 
         else: 
-            counter = 0
-            depot_co[i] = depots[counter]
-        counter += 1
-    
-    return depot_co
+            e[vert] = e[vert-n] + s[vert-n] + dist[vert-n, vert]
+            l[vert] = min(l[vert-n]+s[vert-n]+L, H)

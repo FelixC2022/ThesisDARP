@@ -1,37 +1,49 @@
-import pandas as pd
-import copy 
-import numpy as np
-from tqdm import tqdm
+from preprocess import *
+from feasability import *
+from utils import *
+from mcts import *
+from repair import *
 
-from utils import initialize_state, length_total, is_game_over, display_routes, num_vehs, num_reqs, route_duration, Q, x_co, y_co, s, L, q, e, l, R
-from mcts import MonteCarloTreeSearchNode
+
+import pandas as pd
+import numpy as np
+import copy 
+from tqdm import tqdm
+import time
 
 
 #EXECUTION ALGORITHM 
-def main(sim_num, truncate):
-    state_root = initialize_state()
-    node_root = MonteCarloTreeSearchNode(state_root)
+def main(sim_num, truncate=n):
+    succ = np.full(2*n, 999, dtype=int)
+    pre = np.full(2*n, 999, dtype=int)
+    RI = []
+    root = np.array([succ, pre, RI], dtype=object)
+    current_node = MonteCarloTreeSearchNode(root)
 
-    current_node = node_root
-    for i in tqdm(range(num_reqs)):
+    for i in tqdm(range(n)):
         current_node=current_node.best_action(sim_num, truncate)
 
-    final_node = current_node
-
-    return final_node
+    return current_node
 
 
 if __name__ == '__main__':
 
-    final_node = main(sim_num=20, truncate=10)
+    start = time.time()
 
-    cost_solution= length_total(final_node.state)
 
-    #print([final_node.state[0], final_node.state[1], final_node.state[2]]) #
+    mcts = main(sim_num=1000)
+
+    solution = mcts.state
+    solution = repair_sol(solution)
+    cost = length_solution(solution)
+
+    print(cost)
     print('\n')
-    print(cost_solution)
+    print(is_game_over(solution))
     print('\n')
-    print(is_game_over(final_node.state))
-    print('\n')
-    #print(display_routes(final_node.state))
-    #print(length_total(selected_node.state)  
+    print(len(solution[2]))
+    for i in range(len(solution[2])):
+        print(gen_route(solution, i))
+
+
+    print(f'it took {time.time()-start} seconds')

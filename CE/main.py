@@ -17,8 +17,8 @@ if __name__ == '__main__':
 
         #Initialization 
         best_score = np.inf
-        N = 30 #num of solutions to generate
-        num_elite = 10 #num of elite solutions to select 
+        N = 50 #num of solutions to generate
+        num_elite = 15 #num of elite solutions to select 
 
         #Generate P start 
         P = np.full((n+2, n+2), 1)
@@ -34,7 +34,7 @@ if __name__ == '__main__':
         P = P/total  #normalize
 
 
-        for i in tqdm((range(20))):
+        for i in tqdm((range(50))):
             # Generate N solutions & select the K best solutions 
             solutions_all = gen_N_solutions_multiprocess(N, P)
             # solutions_all = repair_N_solutions_multiprocess(solutions_all) #PLACE AFTER THE SELECTION OF THE ELITES 
@@ -42,24 +42,17 @@ if __name__ == '__main__':
 
             scores = [length_solution(sol) for sol in solutions_all]
 
-            # scores = np.zeros(N)
-            # for j in range(len(solutions_all)): 
-            #     sol = solutions_all[j]
-            #     score = length_solution(sol)
-            #     scores[j] = score
-
             idx_elite = np.argpartition(scores, num_elite)
-            # solutions_elite = []
             solutions_elite = [solutions_all[i] for i in idx_elite[:num_elite]]   
-            # solutions_elite = np.array(solutions_elite, dtype=object) #necessary? 
 
             #Perform Local Search on the x best solution 
             solutions_elite = repair_N_solutions_multiprocess(solutions_elite)
-            solutions_elite = route_exchange_N_multiprocess(solutions_elite)
             solutions_elite = relocate_N_multiprocess(solutions_elite)
+            solutions_elite = zero_split_N_multiprocess(solutions_elite)
+            solutions_elite = route_exchange_N_multiprocess(solutions_elite)
             solutions_elite = list(solutions_elite)
 
-            #again look 
+            #Take the shortest sol and save if better than current best 
             for sol in solutions_elite: 
                 score = length_solution(sol)
                 if score < best_score: 
@@ -67,7 +60,7 @@ if __name__ == '__main__':
                     best_solution = sol
 
             #Update the Pij matrix
-            alpha = 0.4 #between 0.4 and 0.9
+            alpha = 0.3 #between 0.4 and 0.9
             P_new = np.zeros((n+2, n+2))
             total_routes = 0
 
