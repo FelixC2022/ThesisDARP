@@ -3,6 +3,7 @@ from feasability import *
 from utils import *
 from mcts import *
 from repair import *
+from local_search import * 
 
 
 import pandas as pd
@@ -31,19 +32,30 @@ if __name__ == '__main__':
     start = time.time()
 
 
-    mcts = main(sim_num=1000)
+    mcts = main(sim_num=500, truncate=int(n/3))
 
     solution = mcts.state
-    solution = repair_sol(solution)
+
+    iters = 100
+    costs = np.zeros(iters)
+    for i in tqdm(range(iters)):
+        solution = repair_sol(solution)
+        solution = relocate(solution)
+        solution = route_exchange(solution)
+        solution = zero_split(solution)
+        costs[i] = length_solution(solution)
+        if i > 10 and costs[i-10] - costs[i] < 1.5: 
+            break 
+
+
     cost = length_solution(solution)
 
+    print('\n')
     print(cost)
-    print('\n')
     print(is_game_over(solution))
-    print('\n')
-    print(len(solution[2]))
     for i in range(len(solution[2])):
         print(gen_route(solution, i))
 
 
     print(f'it took {time.time()-start} seconds')
+
