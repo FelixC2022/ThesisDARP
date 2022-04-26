@@ -17,8 +17,8 @@ if __name__ == '__main__':
 
         #Initialization 
         best_score = np.inf
-        N = 50 #num of solutions to generate
-        num_elite = 15 #num of elite solutions to select 
+        N = 10 #num of solutions to generate
+        num_elite = 3 #num of elite solutions to select 
 
         #Generate P start 
         P = np.full((n+2, n+2), 1)
@@ -47,9 +47,9 @@ if __name__ == '__main__':
 
             #Perform Local Search on the x best solution 
             solutions_elite = repair_N_solutions_multiprocess(solutions_elite)
-            solutions_elite = relocate_N_multiprocess(solutions_elite)
-            solutions_elite = zero_split_N_multiprocess(solutions_elite)
-            solutions_elite = route_exchange_N_multiprocess(solutions_elite)
+            # solutions_elite = relocate_N_multiprocess(solutions_elite)
+            # solutions_elite = zero_split_N_multiprocess(solutions_elite)
+            # solutions_elite = route_exchange_N_multiprocess(solutions_elite)
             solutions_elite = list(solutions_elite)
 
             #Take the shortest sol and save if better than current best 
@@ -81,5 +81,19 @@ if __name__ == '__main__':
             P = alpha*P + (1-alpha)*P_new #smoothing of pij updates 
 
 
-        print(best_score)
+        solution = best_solution
+        print(length_solution(solution))
+        iters = 100
+        costs = np.zeros(iters)
+        for i in tqdm(range(iters)):
+            solution = repair_sol(solution)
+            solution = relocate(solution)
+            solution = route_exchange(solution)
+            solution = zero_split(solution)
+            costs[i] = length_solution(solution)
+            if i > 10 and costs[i-10] - costs[i] < 1.5: 
+                break 
+
+        print(length_solution(solution))
+        
         print("--- %s seconds ---" % (time.time() - start_time))

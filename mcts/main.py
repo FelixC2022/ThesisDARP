@@ -29,33 +29,37 @@ def main(sim_num, truncate=n):
 
 if __name__ == '__main__':
 
-    start = time.time()
+    for _ in range(10):
+        start = time.time()
 
+        mcts = main(sim_num=250)
 
-    mcts = main(sim_num=500, truncate=int(n/3))
+        solution = mcts.state
 
-    solution = mcts.state
-
-    iters = 100
-    costs = np.zeros(iters)
-    for i in tqdm(range(iters)):
         solution = repair_sol(solution)
-        solution = relocate(solution)
-        solution = route_exchange(solution)
-        solution = zero_split(solution)
-        costs[i] = length_solution(solution)
-        if i > 10 and costs[i-10] - costs[i] < 1.5: 
-            break 
+
+        print(length_solution(solution))
+
+        iters = 100
+        costs = np.zeros(iters)
+        for i in tqdm(range(iters)):
+            solution = repair_sol(solution)
+            solution = relocate(solution)
+            solution = route_exchange(solution)
+            solution = zero_split(solution)
+            costs[i] = length_solution(solution)
+            if i > 10 and costs[i-10] - costs[i] < 1.5: 
+                break 
 
 
-    cost = length_solution(solution)
+        cost = length_solution(solution)
 
-    print('\n')
-    print(cost)
-    print(is_game_over(solution))
-    for i in range(len(solution[2])):
-        print(gen_route(solution, i))
+        print('\n')
+        print(cost)
+        print(is_game_over(solution))
+        for i in range(len(solution[2])):
+            print(gen_route(solution, i))
 
 
-    print(f'it took {time.time()-start} seconds')
+        print(f'it took {time.time()-start} seconds')
 
