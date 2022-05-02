@@ -12,54 +12,75 @@ import copy
 from tqdm import tqdm
 import time
 
+import matplotlib.pyplot as plt
+
 
 #EXECUTION ALGORITHM 
-def main(sim_num, truncate=n):
+def main(sim_num, truncate=n, iters=100):
+
+    start = time.time()
+
     succ = np.full(2*n, 999, dtype=int)
     pre = np.full(2*n, 999, dtype=int)
     RI = []
     root = np.array([succ, pre, RI], dtype=object)
     current_node = MonteCarloTreeSearchNode(root)
 
-    for i in tqdm(range(n)):
+    for i in range(n):
         current_node=current_node.best_action(sim_num, truncate)
 
-    return current_node
+    solution = current_node.state
+
+    solution = repair_sol(solution)
+
+
+    costs = np.zeros(iters)
+    for i in range(iters):
+        solution = repair_sol(solution)
+        solution = relocate(solution)
+        solution = route_exchange(solution)
+        solution = zero_split(solution)
+        solution = repair_sol(solution)
+        costs[i] = length_solution(solution)
+        if i > 10 and costs[i-10] - costs[i] < 1.5: 
+            break 
+
+    cost = length_solution(solution)
+
+    time_elapsed = time.time()-start
+
+    if is_game_over(solution):
+        return cost, time_elapsed
+
+    else: 
+        return np.nan, time_elapsed
 
 
 if __name__ == '__main__':
 
-    for _ in range(10):
-        start = time.time()
+    results = []
 
-        mcts = main(sim_num=250)
+    for i in tqdm(range(5)):#tqdm(np.arange(50,1050, step=50, dtype=int)):
+        cost, time_elap = main(sim_num=250, iters=100)
+        cost = float(cost)
+        time_elap = float(time_elap)
+        print(cost, time_elap)
+        results.append([i, cost, time_elap])
 
-        solution = mcts.state
+    results = pd.DataFrame((results), columns=['sim_num', 'cost', 'time'])
+    print(results)
 
-        solution = repair_sol(solution)
+    fig, axs = plt.subplots(2, 1)
 
-        print(length_solution(solution))
-
-        iters = 100
-        costs = np.zeros(iters)
-        for i in tqdm(range(iters)):
-            solution = repair_sol(solution)
-            solution = relocate(solution)
-            solution = route_exchange(solution)
-            solution = zero_split(solution)
-            costs[i] = length_solution(solution)
-            if i > 10 and costs[i-10] - costs[i] < 1.5: 
-                break 
+    axs[0].plot(results.sim_num, results.cost)
+    axs[1].plot(results.sim_num, results.time, c="orange")
 
 
-        cost = length_solution(solution)
+    axs[0].set_xlabel('sim_num')    
+    axs[1].set_xlabel('sim_num')    
 
-        print('\n')
-        print(cost)
-        print(is_game_over(solution))
-        for i in range(len(solution[2])):
-            print(gen_route(solution, i))
+    axs[0].set_ylabel('cost')
+    axs[1].set_ylabel('time')
 
-
-        print(f'it took {time.time()-start} seconds')
+    plt.show()
 

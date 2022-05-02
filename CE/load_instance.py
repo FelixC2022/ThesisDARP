@@ -1,7 +1,7 @@
 import pandas as pd 
 import numpy as np
 
-path = 'CE/data/a4-40.txt'
+path = 'CE/data/a3-24.txt'
 
 
 #@@@@@@@@@@@@@@@@@@ LOAD INSTANCE DATA #@@@@@@@@@@@@@@@@@@
