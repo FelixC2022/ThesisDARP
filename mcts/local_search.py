@@ -108,7 +108,7 @@ def insert_seq(route, seq):
 def route_exchange(solution): 
     RI = solution[2]
 
-    for _ in range(5):
+    for _ in range(3):
         selected_routes = random.sample(range(len(RI)), 2)
         route1_idx = selected_routes[0]
         route2_idx = selected_routes[1]
@@ -381,7 +381,7 @@ def relocate(solution):
 
 
     #insert the users again in a random rooute & try 5 times to get an improving solution 
-    for _ in range(5):
+    for _ in range(3):
         routes = copy.deepcopy(routes_old)
 
         for i in range(len(again)):

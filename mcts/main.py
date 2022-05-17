@@ -60,20 +60,28 @@ if __name__ == '__main__':
 
     results = []
 
-    for i in tqdm(range(5)):#tqdm(np.arange(50,1050, step=50, dtype=int)):
-        cost, time_elap = main(sim_num=250, iters=100)
-        cost = float(cost)
-        time_elap = float(time_elap)
-        print(cost, time_elap)
+    for i in tqdm(np.arange(10, 100, step=3)):#tqdm(np.arange(50,1050, step=50, dtype=int)):
+
+        cost = np.inf
+        time_elap = np.inf 
+
+        for _ in range(1):
+            cost_i, time_elap_i = main(i, truncate=n, iters=0)
+            if cost_i < cost:
+                cost = cost_i
+                time_elap = time_elap_i
+
         results.append([i, cost, time_elap])
 
     results = pd.DataFrame((results), columns=['sim_num', 'cost', 'time'])
+
     print(results)
+
 
     fig, axs = plt.subplots(2, 1)
 
-    axs[0].plot(results.sim_num, results.cost)
-    axs[1].plot(results.sim_num, results.time, c="orange")
+    axs[0].scatter(results.sim_num, results.cost)
+    axs[1].scatter(results.sim_num, results.time, c="orange")
 
 
     axs[0].set_xlabel('sim_num')    
@@ -83,4 +91,37 @@ if __name__ == '__main__':
     axs[1].set_ylabel('time')
 
     plt.show()
+
+
+
+
+
+
+# if __name__ == '__main__':
+
+#     results = []
+
+#     for i in tqdm(range(5)):#tqdm(np.arange(50,1050, step=50, dtype=int)):
+#         cost, time_elap = main(sim_num=250, iters=100)
+#         cost = float(cost)
+#         time_elap = float(time_elap)
+#         print(cost, time_elap)
+#         results.append([i, cost, time_elap])
+
+#     results = pd.DataFrame((results), columns=['sim_num', 'cost', 'time'])
+#     print(results)
+
+#     fig, axs = plt.subplots(2, 1)
+
+#     axs[0].plot(results.sim_num, results.cost)
+#     axs[1].plot(results.sim_num, results.time, c="orange")
+
+
+#     axs[0].set_xlabel('sim_num')    
+#     axs[1].set_xlabel('sim_num')    
+
+#     axs[0].set_ylabel('cost')
+#     axs[1].set_ylabel('time')
+
+#     plt.show()
 

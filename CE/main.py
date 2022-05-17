@@ -9,6 +9,10 @@ import time
 import pandas as pd
 from tqdm import tqdm
 
+import matplotlib.pyplot as plt
+import pandas as pd
+
+
 def main(iterations, iters_ls,  N, num_elite, alpha):
 
     start_time = time.time()
@@ -59,9 +63,9 @@ def main(iterations, iters_ls,  N, num_elite, alpha):
 
 
         #Stops the Ce loop if the solution doesn't improve after 10 iterations 
-        costs_main[i] = best_score
-        if i > 10 and costs_main[i] - costs_main[i-10] < 1.5:
-            break
+        # costs_main[i] = best_score
+        # if i > 10 and costs_main[i] - costs_main[i-10] < 1.5:
+        #     break
 
 
         #Update the Pij matrix
@@ -107,20 +111,41 @@ def main(iterations, iters_ls,  N, num_elite, alpha):
     return final_cost, time_elapsed
 
 
-
 if __name__ == '__main__':
-
 
     results = []
 
-    for i in tqdm(range(5)):#tqdm(np.arange(50,1050, step=50, dtype=int)):
-        cost, time_elap = main(iterations=50, iters_ls=100, N=50, num_elite=15, alpha=0.3)
-        cost = float(cost)
-        #if cost is lower than in parragh number of allowed vehicles is exceeded check this 
-        time_elap = float(time_elap)
-        print(cost, time_elap)
+    for i in tqdm(np.arange(1, 500, step=20)):#tqdm(np.arange(50,1050, step=50, dtype=int)):
+        # cost, time_elap = main(i, 100, 10, 5, 0.5)
+
+        cost = np.inf
+        time_elap = np.inf 
+
+        for _ in range(3):
+            cost_i, time_elap_i = main(iterations=i, iters_ls=100, N=50, num_elite=15, alpha=0.3)
+            if cost_i < cost:
+                cost = cost_i
+                time_elap = time_elap_i
+
         results.append([i, cost, time_elap])
 
     results = pd.DataFrame((results), columns=['sim_num', 'cost', 'time'])
 
     print(results)
+
+
+
+    fig, axs = plt.subplots(2, 1)
+
+    axs[0].scatter(results.sim_num, results.cost)
+    axs[1].scatter(results.sim_num, results.time, c="orange")
+
+
+    axs[0].set_xlabel('sim_num')    
+    axs[1].set_xlabel('sim_num')    
+
+    axs[0].set_ylabel('cost')
+    axs[1].set_ylabel('time')
+
+    plt.show()
+
